@@ -6,6 +6,22 @@
 			return str;
 	}
 
+	function invertRGB_ColorStr (oldColorStr) {
+		//--- Special case
+		if (oldColorStr === 'transparent')   oldColorStr = 'rgb(255, 255, 255)';
+
+		//--- Color is text in RGB format.  EG: rgb(1, 22, 255)
+		var colorArray  = oldColorStr.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
+
+		var newColorStr = $.map (colorArray, function (byte, J) {
+			if (!J) return null;
+			//--- Invert a decimal byte.
+			return Math.abs(255 - parseInt(byte, 10) );
+		}).join(',');
+
+		return 'rgb(' + newColorStr + ')';
+	}
+
 	var DynamicStyle = function(selectorText, styleName, styleValue) {
 		this.selectorText = selectorText;
 		this.styleName = styleName;
@@ -52,21 +68,20 @@
 			if (!$element) $element = $("body");
 
 			var colorRules = [];
-			var processSelector = function(rule){
-
-			 
+			var processSelector = function(rule){ 
 				for (var key in rule.style) {
 					var style = rule.style[key];
 					if (typeof (style) === "string" && key !== "cssText" && style.indexOf("rgb") !== -1){
 
 						var test = new DynamicStyle(rule.selectorText, key, style);
-						if (test.r !== undefined && $element.find(escapeStr(test.selectorText)).length !== 0){
+						if (test.r !== undefined /*&& $element.find(escapeStr(test.selectorText)).length !== 0*/){
 							var v = test.r + "," + test.g + "," + test.b;
 							if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
 							self.dynamicStyles[v].push(test);
+							test.sortOrder = self.dynamicStylesCount;
 							self.dynamicStylesCount++;
 						}
-					 
+
 						test.val();
 						//console.log(rule.selectorText, key, style);
 					}
@@ -96,23 +111,35 @@
 								processCss(rules);
 							}
 						}
-				} else {
-					processCss(style);
-				}
-			};
+					} else {
+						processCss(style);
+					}
+				};
 
-			console.warn("Styles initialized", this.dynamicStylesCount, this.dynamicStyles);
-		}; 
-		this.init = function() {
-			this.getStyles();
-		} 
-		return this;
+			}; 
+			this.init = function() {
+				this.getStyles();
+			} 
+			return this;
 	};
 
 
 	Deep.on("sa.theme-roller.index.render", function(){
-		var style = new DynamicStyleController();
-		style.init();
-
+		var styleController = new DynamicStyleController();
+		styleController.init();
+		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
+		for (var colorString in styleController.dynamicStyles) {
+			var colorVisualDiv = $("<div/>", 
+				{css: {
+					"background-color": "rgb("+colorString+")",
+					"color" : invertRGB_ColorStr("rgb("+colorString+")"),
+					"font-weight" : "bold",
+					"padding" : "11px"
+				}
+			});
+			var styles = styleController.dynamicStyles[colorString];
+			colorVisualDiv.text(colorString);
+			this.$el.find("#sheet-colors").append(colorVisualDiv);
+		}
 	});
 })(jQuery);
