@@ -1,8 +1,8 @@
-(function() {
+(function($, Deep) {
 
 	function getMatchedCSSRules(node) {
 		var selectors = [];
-		var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, '');
+		var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, "");
 
 		if (rules){
 			var i = rules.length;
@@ -13,27 +13,28 @@
 		return selectors;
 	}
 
-	var escapeStr = function(str){
-		if( str)
-			return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1')
-		else
+/*	var escapeStr = function(str){
+		if(str){
+			return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');
+		} else {
 			return str;
-	};
+		}
+	};*/
 
 	var invertRGB_ColorStr = function(oldColorStr) {
 		//--- Special case
-		if (oldColorStr === 'transparent')   oldColorStr = 'rgb(255, 255, 255)';
+		if (oldColorStr === "transparent")   oldColorStr = "rgb(255, 255, 255)";
 
 		//--- Color is text in RGB format.  EG: rgb(1, 22, 255)
 		var colorArray  = oldColorStr.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
 
-		var newColorStr = $.map (colorArray, function (byte, J) {
+		var newColorStr = $.map(colorArray, function (byte, J) {
 			if (!J) return null;
 			//--- Invert a decimal byte.
 			return Math.abs(255 - parseInt(byte, 10) );
-		}).join(',');
+		}).join(",");
 
-		return 'rgb(' + newColorStr + ')';
+		return "rgb(" + newColorStr + ")";
 	};
 
 	var DynamicStyle = function(selectorText, styleName, styleValue) {
@@ -41,30 +42,30 @@
 		this.styleName = styleName;
 
 		var matchColors = /(\d{1,3}), (\d{1,3}), (\d{1,3})/;
-		var matchColorsRgba = /(\d{1,3}), (\d{1,3}), (\d{1,3}), (.*)/;
+		// var matchColorsRgba = /(\d{1,3}), (\d{1,3}), (\d{1,3}), (.*)/;
 		var matchItems = new RegExp("^rgb((.*))$");
-		//var rgbArr = []; 
+		//var rgbArr = [];
 		var self = this;
 		self.originalStyleText = styleValue;
-		// try{ 
+		// try{
 
-			this.styleText = styleValue.replace(matchItems, function (match, content, off, s) {
-				var test = match.match(matchColors);
+			this.styleText = styleValue.replace(matchItems, function (match/*, content, off , s*/){
+				var test = this.styleText.match(matchColors);
 				self.r = test[1];
 				self.g = test[2];
-				self.b = test[3];   
+				self.b = test[3];
 				return styleValue.replace(match, "{0}");
 			});
-		// } catch (e) { 
-		// } 
+		// } catch (e) {
+		// }
 
 		this.val = function(value){
-			if (value){ 
-				// set value list  
-			} else {  
-				// get value list 
+			if (value){
+				// set value list
+			} else {
+				// get value list
 			}
-		}; 
+		};
 
 		if (this.r !== undefined){
 		}
@@ -77,28 +78,12 @@
 		this.dynamicStyles = [];
 		this.dynamicStylesCount = 0;
 
-		
+
 		this.getStyles = function($element) {
+
 			if (!$element) $element = $("body");
-
-			var colorRules = [];
-			var foundOnPage = function(selectorText) {
-				if ($element.find(escapeStr(selectorText)).length>0){
-					return true;
-				} else {
-					console.warn(selectorText, " not found");
-				}
-				sel = selectorText.split(",");
-				for (var i = 0; i < sel.length; i++) {
-					if ($element.find(escapeStr(sel[i])).length > 0){
-						return true;
-					}
-				}
-				return false;
-			};
-
-			var processSelector = function(rule){ 
-				for (var key in rule.style) {
+			var processSelector = function(rule){
+				for (var key in rule.style){
 					var style = rule.style[key];
 					if (typeof (style) === "string" && key !== "cssText" && style.indexOf("rgb") !== -1){
 
@@ -114,11 +99,11 @@
 						test.val();
 						//console.log(rule.selectorText, key, style);
 					}
-				};
+				}
 			};
 
 			var processCss = function(classes) {
-				if(classes){	
+				if(classes){
 					for(var x=0; x < classes.length ; x++){
 						var selector = classes[x];
 						if (selector){
@@ -143,9 +128,9 @@
 					} else {
 						processCss(style);
 					}
-				};
+				}
 
-			};
+			}
 
 			this.init = function() {
 				this.getStyles();
@@ -154,9 +139,8 @@
 			return this;
 	};
 
-
 	var appendColorWidget = function($el, colorString, style) {
-		var colorVisualDiv = $("<div/>", 
+		var colorVisualDiv = $("<div/>",
 			{css: {
 				"background-color": "rgb("+colorString+")",
 				"color" : invertRGB_ColorStr("rgb("+colorString+")"),
@@ -167,13 +151,15 @@
 		$el.find("#sheet-colors").append(colorVisualDiv);
 	};
 
+
+
 	Deep.on("sa.theme-roller.index.render", function(){
 		var self = this;
 		var styleController = new DynamicStyleController();
 		styleController.init();
 		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
 		/*for (var colorString in styleController.dynamicStyles) {
-			var colorVisualDiv = $("<div/>", 
+			var colorVisualDiv = $("<div/>",
 				{css: {
 					"background-color": "rgb("+colorString+")",
 					"color" : invertRGB_ColorStr("rgb("+colorString+")"),
@@ -199,7 +185,7 @@
 						for (var i = 0; i < styles.length; i++) {
 							var style = styles[i];
 							if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
-						 		console.log(style);
+								console.log(style);
 								appendColorWidget(self.$el, key, style);
 							}
 						}
@@ -212,7 +198,7 @@
 						rule = matchedCSSRules[m];
 						appendColorWidget(self.$el, "205,201,201", {selectorText:rule, styleName:"test"});
 					}
-				};
+				}
 				console.log(matchedCSSRules,  this, $(this).css("background-color"));
 			}
 			return false;
@@ -229,4 +215,4 @@
 			}
 		});*/
 	});
-})(jQuery);
+})(jQuery, Deep);
