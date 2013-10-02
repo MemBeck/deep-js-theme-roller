@@ -155,7 +155,20 @@
 	};
 
 
+	var appendColorWidget = function($el, colorString, style) {
+		var colorVisualDiv = $("<div/>", 
+			{css: {
+				"background-color": "rgb("+colorString+")",
+				"color" : invertRGB_ColorStr("rgb("+colorString+")"),
+				"padding" : "11px"
+			}
+		});
+		colorVisualDiv.html(style.selectorText + " <strong>" + style.styleName + "</strong>");
+		$el.find("#sheet-colors").append(colorVisualDiv);
+	};
+
 	Deep.on("sa.theme-roller.index.render", function(){
+		var self = this;
 		var styleController = new DynamicStyleController();
 		styleController.init();
 		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
@@ -177,15 +190,29 @@
 		this.$el.find("*").click(function() {
 			var matchedCSSRules = getMatchedCSSRules(this);
 			if (matchedCSSRules.length>0){
-				for (var key in styleController.dynamicStyles) {
-					var styles = styleController.dynamicStyles[key];
-					for (var i = 0; i < styles.length; i++) {
-						var style = styles[i];
-						if (style.selectorText === matchedCSSRules[0]){
-							debugger;
+				var rule ;
+				var sheetColorsDiv = self.$el.find("#sheet-colors").html("").show();
+				for (var m = 0; m < matchedCSSRules.length; m++) {
+					rule = matchedCSSRules[m];
+					for (var key in styleController.dynamicStyles) {
+						var styles = styleController.dynamicStyles[key];
+						for (var i = 0; i < styles.length; i++) {
+							var style = styles[i];
+							if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
+						 		console.log(style);
+								appendColorWidget(self.$el, key, style);
+							}
 						}
 					}
 				}
+
+				if (sheetColorsDiv.children().length === 0) {
+					appendColorWidget(self.$el, "205,201,201", {selectorText:"No CSS color rules matched: ", styleName:"Maybe you want to define so CSS code?"});
+					for (m = 0; m < matchedCSSRules.length; m++) {
+						rule = matchedCSSRules[m];
+						appendColorWidget(self.$el, "205,201,201", {selectorText:rule, styleName:"test"});
+					}
+				};
 				console.log(matchedCSSRules,  this, $(this).css("background-color"));
 			}
 			return false;
