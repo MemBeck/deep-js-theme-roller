@@ -50,10 +50,10 @@
 		// try{
 
 			this.styleText = styleValue.replace(matchItems, function (match/*, content, off , s*/){
-				var test = this.styleText.match(matchColors);
-				self.r = test[1];
-				self.g = test[2];
-				self.b = test[3];
+				var test = styleValue.match(matchColors);
+				self.r = parseInt(test[1],10);
+				self.g = parseInt(test[2],10);
+				self.b = parseInt(test[3],10);
 				return styleValue.replace(match, "{0}");
 			});
 		// } catch (e) {
@@ -139,6 +139,34 @@
 			return this;
 	};
 
+	var hexToRgb = function (hex) {
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
+
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+	};
+
+	var hexToRgbString = function (hex) {
+		var result = hexToRgb(hex);
+		return "rgb(" + result.r + "," + result.g + "," + result.b + ")";
+	};
+	var componentToHex = function (c) {
+		var hex = c.toString(16);
+		return hex.length == 1 ? "0" + hex : hex;
+	};
+	var rgbToHex = function(r, g, b) {
+		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+	};
+
+
 	var appendColorWidget = function($el, colorString, style) {
 		var colorVisualDiv = $("<div/>",
 			{css: {
@@ -147,7 +175,23 @@
 				"padding" : "11px"
 			}
 		});
-		colorVisualDiv.html(style.selectorText + " <strong>" + style.styleName + "</strong>");
+		colorVisualDiv.data("style", style).html(style.selectorText + " <strong>" + style.styleName + "</strong>");
+		colorVisualDiv.click(function() {
+			var hexVal = prompt("Enter the new color in hexadecimal: ", "");
+			if ($.trim(hexVal) !== ""){
+				if (hexVal[0] !== "#") hexVal = "#" + hexVal;
+				if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
+
+				} else {
+
+				}
+				var color = invertRGB_ColorStr(hexToRgbString(hexVal));
+				$(this).css({
+					"background-color" : hexVal,
+					"color" : color
+				});
+			}
+		});
 		$el.find("#sheet-colors").append(colorVisualDiv);
 	};
 
@@ -158,19 +202,6 @@
 		var styleController = new DynamicStyleController();
 		styleController.init();
 		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
-		/*for (var colorString in styleController.dynamicStyles) {
-			var colorVisualDiv = $("<div/>",
-				{css: {
-					"background-color": "rgb("+colorString+")",
-					"color" : invertRGB_ColorStr("rgb("+colorString+")"),
-					"font-weight" : "bold",
-					"padding" : "11px"
-				}
-			});
-			var styles = styleController.dynamicStyles[colorString];
-			colorVisualDiv.text(colorString);
-			this.$el.find("#sheet-colors").append(colorVisualDiv);
-		}*/
 
 		// analyze each element and find dynamic style setting
 		this.$el.find("*").click(function() {
@@ -185,7 +216,6 @@
 						for (var i = 0; i < styles.length; i++) {
 							var style = styles[i];
 							if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
-								console.log(style);
 								appendColorWidget(self.$el, key, style);
 							}
 						}
