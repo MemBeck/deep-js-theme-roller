@@ -5,10 +5,8 @@
 		else
 			return str;
 	}
-	var dynamicStyles = [];
-	var dynamicStylesCount = 0;
 
-	var dynamicStyle = function(selectorText, styleName, styleValue) {
+	var DynamicStyle = function(selectorText, styleName, styleValue) {
 		this.selectorText = selectorText;
 		this.styleName = styleName;
 
@@ -44,62 +42,77 @@
 		return this;
 	};
 
-	var getStyle = function(className) {
+	var DynamicStyleController = function() {
+		var self = this;
+		this.dynamicStyles = [];
+		this.dynamicStylesCount = 0;
 
-		var colorRules = [];
-		var processSelector = function(rule){
+		
+		this.getStyles = function($element) {
+			if (!$element) $element = $("body");
 
-		 
-			for (var key in rule.style) {
-				var style = rule.style[key];
-				if (typeof (style) === "string" && key !== "cssText" && style.indexOf("rgb") !== -1){
+			var colorRules = [];
+			var processSelector = function(rule){
 
-					var test = new dynamicStyle(rule.selectorText, key, style);
-					if (test.r !== undefined && $(escapeStr(test.selectorText)).length !== 0){
-						var v = test.r + "," + test.g + "," + test.b;
-						if (dynamicStyles[v] === undefined) dynamicStyles[v] = [];
-						dynamicStyles[v].push(test);
-						dynamicStylesCount++;
+			 
+				for (var key in rule.style) {
+					var style = rule.style[key];
+					if (typeof (style) === "string" && key !== "cssText" && style.indexOf("rgb") !== -1){
+
+						var test = new DynamicStyle(rule.selectorText, key, style);
+						if (test.r !== undefined && $element.find(escapeStr(test.selectorText)).length !== 0){
+							var v = test.r + "," + test.g + "," + test.b;
+							if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
+							self.dynamicStyles[v].push(test);
+							self.dynamicStylesCount++;
+						}
+					 
+						test.val();
+						//console.log(rule.selectorText, key, style);
 					}
-				 
-					test.val();
-					//console.log(rule.selectorText, key, style);
-				}
+				};
 			};
-		};
 
-		var processCss = function(classes) {
-			if(classes){	
-				for(var x=0; x < classes.length ; x++){
-					var selector = classes[x];
-					if (selector){
-						processSelector(selector);
-					}
-				}
-			}
-		};
-
-		var styles = document.styleSheets;
-		for (var s = 0; s < styles.length; s++) {
-			var style = styles[s];
-			if (!style.styleSheet){
-				if (style.cssRules)
-					for (var i = 0; i < style.cssRules.length; i++) {
-						var sheet = style.cssRules[i].styleSheet;
-						if (sheet){
-							var rules = sheet.rules || sheet.cssRules;
-							processCss(rules);
+			var processCss = function(classes) {
+				if(classes){	
+					for(var x=0; x < classes.length ; x++){
+						var selector = classes[x];
+						if (selector){
+							processSelector(selector);
 						}
 					}
-			} else {
-				processCss(style);
-			}
-		};
+				}
+			};
 
-		console.warn("STYLES", dynamicStyles, dynamicStylesCount);
-	}; 
+			var styles = document.styleSheets;
+			for (var s = 0; s < styles.length; s++) {
+				var style = styles[s];
+				if (!style.styleSheet){
+					if (style.cssRules)
+						for (var i = 0; i < style.cssRules.length; i++) {
+							var sheet = style.cssRules[i].styleSheet;
+							if (sheet){
+								var rules = sheet.rules || sheet.cssRules;
+								processCss(rules);
+							}
+						}
+				} else {
+					processCss(style);
+				}
+			};
+
+			console.warn("Styles initialized", this.dynamicStylesCount, this.dynamicStyles);
+		}; 
+		this.init = function() {
+			this.getStyles();
+		} 
+		return this;
+	};
+
 
 	Deep.on("sa.theme-roller.index.render", function(){
-		getStyle(".container");
+		var style = new DynamicStyleController();
+		style.init();
+
 	});
 })(jQuery);
