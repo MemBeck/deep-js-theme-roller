@@ -15,16 +15,6 @@
 		return selectors;
 	}
 
-/*	var escapeStr = function(str){
-		if(str){
-			return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');
-		} else {
-			return str;
-		}
-	};*/
-
-
-
 	var DynamicStyle = function(selectorText, styleName, styleValue) {
 		this.selectorText = selectorText;
 		this.styleName = styleName;
@@ -66,6 +56,10 @@
 		this.dynamicStyles = [];
 		this.dynamicStylesCount = 0;
 
+		this.applyCSS = function(){
+			var style = $("<style>body,html{background-color:green;}</style>");
+			style.appendTo("body");
+		};
 
 		this.getStyles = function($element) {
 
@@ -102,56 +96,65 @@
 			};
 
 			var styles = document.styleSheets;
+
+			console.error("styles", styles);
+			// read css import rules
 			for (var s = 0; s < styles.length; s++) {
 				var style = styles[s];
-				if (!style.styleSheet){
-					if (style.cssRules)
-						for (var i = 0; i < style.cssRules.length; i++) {
-							var sheet = style.cssRules[i].styleSheet;
-							if (sheet){
-								var rules = sheet.rules || sheet.cssRules;
-								processCss(rules);
-							}
+				var rules = style.rules || style.cssRules;
+
+				if (rules){
+					for (var i = 0; i < rules.length; i++) {
+						var rule = rules[i];
+						var sheet = rule.styleSheet;
+						if (sheet){
+							var ru = sheet.rules || sheet.cssRules;
+							processCss(ru);
 						}
-					} else {
-						processCss(style);
 					}
 				}
-
 			}
 
-			this.init = function() {
-				this.getStyles();
-			};
+			// read files css rules
+			if (this.dynamicStylesCount === 0)
+				for (var css = 0; css < styles.length; css++) {
+					var cssSheet = styles[css];
+					var rul = cssSheet.rules || cssSheet.cssRules;
+					if (rul)
+						processCss(rul);
+				}
+		};
 
-			this.getCSSRuleMatches = function(element) {
-				var result = [];
-				var matchedCSSRules = getMatchedCSSRules(element);
-				if (matchedCSSRules.length>0){
-					var rule ;
-					// get all current rules matching this element
-					for (var m = 0; m < matchedCSSRules.length; m++) {
-						rule = matchedCSSRules[m];
-						for (var key in styleController.dynamicStyles) {
-							var styles = styleController.dynamicStyles[key];
-							for (var i = 0; i < styles.length; i++) {
-								var style = styles[i];
-								if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
-									result.push({"el":element, "key" : key, "style": style});
-								}
+		this.init = function() {
+			this.getStyles();
+		};
+
+		this.getCSSRuleMatches = function(element) {
+			var result = [];
+			var matchedCSSRules = getMatchedCSSRules(element);
+			if (matchedCSSRules.length>0){
+				var rule ;
+				// get all current rules matching this element
+				for (var m = 0; m < matchedCSSRules.length; m++) {
+					rule = matchedCSSRules[m];
+					for (var key in styleController.dynamicStyles) {
+						var styles = styleController.dynamicStyles[key];
+						for (var i = 0; i < styles.length; i++) {
+							var style = styles[i];
+							if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
+								result.push({"el":element, "key" : key, "style": style});
 							}
 						}
 					}
 				}
-				return result;
-			};
+			}
+			return result;
+		};
 
-			return this;
+		return this;
 	};
 
-	var styleController = new DynamicStyleController();
-	styleController.init();
-
+	var styleController;
 	var hexToRgb = function (hex) {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
     var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -204,19 +207,24 @@
 				"padding" : "11px"
 			},
 			click: function() {
-				var hexVal = prompt("Enter the new color in hexadecimal: ", "");
+				var hexVal = prompt("Enter the new color in hexadecimal: ", "FF33CC");
 				if ($.trim(hexVal) !== ""){
 					if (hexVal[0] !== "#") hexVal = "#" + hexVal;
-					if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
+/*					if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
 
 					} else {
 
-					}
+					}*/
 
 					var color = invertRGBColorString(hexToRgbString(hexVal));
-					$(this).css({
-						"background-color" : hexVal,
-						"color" : color
+					var currentColor = $(this).css("background-color");
+					$(this).parent().children().each(function() {
+						var c = $(this).css("background-color");
+						if (c === currentColor)
+							$(this).css({
+								"background-color" : hexVal,
+								"color" : color
+							});
 					});
 				}
 				return false;
@@ -241,7 +249,10 @@
 		}
 	};
 
+	styleController = new DynamicStyleController();
+	styleController.init();
 	Deep.on("sa.theme-roller.index.render", function(){
+//		styleController.applyCSS();
 		var self = this;
 		var $el = this.$el;
 		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
@@ -254,13 +265,13 @@
 				styleRules = getParentMatches(this);
 				for (var i = 0; i < styleRules.length; i++) {
 					var r = styleRules[i];
-					r.style.selectorText = r.style.selectorText; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
+					r.style.selectorText = r.style.selectorText;// + " - " + r.style.sortOrder; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
 					appendColorWidget($el, r.key, r.style);
 				}
 			} else {
-				for (var i = 0; i < styleRules.length; i++) {
-					var r = styleRules[i];
-					appendColorWidget($el, r.key, r.style);
+				for (var a = 0; a < styleRules.length; a++) {
+					var ru = styleRules[a];
+					appendColorWidget($el, ru.key, ru.style);
 				}
 			}
 
