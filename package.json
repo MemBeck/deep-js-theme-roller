@@ -1,0 +1,31 @@
+{
+  "author": "Stephan Ahlf <stephan@ahlf-it.de> (https://github.com/s-a/deep-js-theme-roller)",
+  "name": "Theme Roller",
+  "description": "Change, Create, share deep-js Themes.", 
+  "version": "0.1.1", 
+  "path":"sa/theme-roller",
+  "licenses" : [
+    { 
+        "type" : "Open Source- GPL", 
+        "url" : "https://github.com/s-a/deep-js#licenses"
+    },
+    { 
+        "type" : "Commercial License", 
+        "url" : "https://github.com/s-a/deep-js#licenses"
+    },
+    { 
+        "type" : "Enterprise License", 
+        "url" : "https://github.com/s-a/deep-js#licenses"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "user" : "s-a",
+    "name" : "deep-js-theme-roller",
+    "url": "https://github.com/s-a/deep-js-theme-roller.git",
+    "packageurl" : "https://raw.github.com/s-a/deep-js-theme-roller/master/package.json"
+  }, 
+  "dependencies": [
+      "deep-js-base"
+    ]
+} 
