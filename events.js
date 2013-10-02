@@ -1,24 +1,32 @@
 (function() {
+	function escapeStr( str) {
+		if( str)
+			return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1')
+		else
+			return str;
+	}
 	var dynamicStyles = [];
+	var dynamicStylesCount = 0;
+
 	var dynamicStyle = function(selectorText, styleName, styleValue) {
 		this.selectorText = selectorText;
 		this.styleName = styleName;
 
 		var matchColors = /(\d{1,3}), (\d{1,3}), (\d{1,3})/;
-	 	var matchColorsRgba = /(\d{1,3}), (\d{1,3}), (\d{1,3}), (.*)/;
+		var matchColorsRgba = /(\d{1,3}), (\d{1,3}), (\d{1,3}), (.*)/;
 		var matchItems = new RegExp("^rgb((.*))$");
 		//var rgbArr = []; 
 		var self = this;
 		self.originalStyleText = styleValue;
 		// try{ 
 
-		this.styleText = styleValue.replace(matchItems, function (match, content, off, s) {
-			var test = match.match(matchColors);
-			self.r = test[1];
-			self.g = test[2];
-			self.b = test[3];   
-			return styleValue.replace(match, "{0}");
-		});
+			this.styleText = styleValue.replace(matchItems, function (match, content, off, s) {
+				var test = match.match(matchColors);
+				self.r = test[1];
+				self.g = test[2];
+				self.b = test[3];   
+				return styleValue.replace(match, "{0}");
+			});
 		// } catch (e) { 
 		// } 
 
@@ -31,13 +39,10 @@
 		}; 
 
 		if (this.r !== undefined){
-			var v = this.r + "," + this.g + "," + this.b;
-			if (dynamicStyles[v] === undefined) dynamicStyles[v] = [];
-			dynamicStyles[v].push(this);
 		}
 
 		return this;
-	}
+	};
 
 	var getStyle = function(className) {
 
@@ -50,6 +55,12 @@
 				if (typeof (style) === "string" && key !== "cssText" && style.indexOf("rgb") !== -1){
 
 					var test = new dynamicStyle(rule.selectorText, key, style);
+					if (test.r !== undefined && $(escapeStr(test.selectorText)).length !== 0){
+						var v = test.r + "," + test.g + "," + test.b;
+						if (dynamicStyles[v] === undefined) dynamicStyles[v] = [];
+						dynamicStyles[v].push(test);
+						dynamicStylesCount++;
+					}
 				 
 					test.val();
 					//console.log(rule.selectorText, key, style);
@@ -60,14 +71,13 @@
 		var processCss = function(classes) {
 			if(classes){	
 				for(var x=0; x < classes.length ; x++){
-	                // (classes[x].cssText) ? alert(classes[x].cssText) : alert(classes[x].style.cssText);
-	                var selector = classes[x];
-	                if (selector){
+					var selector = classes[x];
+					if (selector){
 						processSelector(selector);
-	                }
-	            }
+					}
+				}
 			}
-	    };
+		};
 
 		var styles = document.styleSheets;
 		for (var s = 0; s < styles.length; s++) {
@@ -85,7 +95,8 @@
 				processCss(style);
 			}
 		};
-		console.log(dynamicStyles);
+
+		console.warn("STYLES", dynamicStyles, dynamicStylesCount);
 	}; 
 
 	Deep.on("sa.theme-roller.index.render", function(){
