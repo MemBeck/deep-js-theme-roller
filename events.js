@@ -1,7 +1,9 @@
 (function($, Deep) {
 
+
 	function getMatchedCSSRules(node) {
 		var selectors = [];
+		if (!node || !node.ownerDocument) return [];
 		var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, "");
 
 		if (rules){
@@ -21,21 +23,7 @@
 		}
 	};*/
 
-	var invertRGB_ColorStr = function(oldColorStr) {
-		//--- Special case
-		if (oldColorStr === "transparent")   oldColorStr = "rgb(255, 255, 255)";
 
-		//--- Color is text in RGB format.  EG: rgb(1, 22, 255)
-		var colorArray  = oldColorStr.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
-
-		var newColorStr = $.map(colorArray, function (byte, J) {
-			if (!J) return null;
-			//--- Invert a decimal byte.
-			return Math.abs(255 - parseInt(byte, 10) );
-		}).join(",");
-
-		return "rgb(" + newColorStr + ")";
-	};
 
 	var DynamicStyle = function(selectorText, styleName, styleValue) {
 		this.selectorText = selectorText;
@@ -136,8 +124,33 @@
 				this.getStyles();
 			};
 
+			this.getCSSRuleMatches = function(element) {
+				var result = [];
+				var matchedCSSRules = getMatchedCSSRules(element);
+				if (matchedCSSRules.length>0){
+					var rule ;
+					// get all current rules matching this element
+					for (var m = 0; m < matchedCSSRules.length; m++) {
+						rule = matchedCSSRules[m];
+						for (var key in styleController.dynamicStyles) {
+							var styles = styleController.dynamicStyles[key];
+							for (var i = 0; i < styles.length; i++) {
+								var style = styles[i];
+								if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
+									result.push({"el":element, "key" : key, "style": style});
+								}
+							}
+						}
+					}
+				}
+				return result;
+			};
+
 			return this;
 	};
+
+	var styleController = new DynamicStyleController();
+	styleController.init();
 
 	var hexToRgb = function (hex) {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
@@ -165,84 +178,93 @@
 	var rgbToHex = function(r, g, b) {
 		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 	};
+	var invertRGBColorString = function(oldColorStr) {
+		//--- Special case
+		if (oldColorStr === "transparent")   oldColorStr = "rgb(255, 255, 255)";
 
+		//--- Color is text in RGB format.  EG: rgb(1, 22, 255)
+		var colorArray  = oldColorStr.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
+
+		var newColorStr = $.map(colorArray, function (byte, J) {
+			if (!J) return null;
+			//--- Invert a decimal byte.
+			return Math.abs(255 - parseInt(byte, 10) );
+		}).join(",");
+
+		return "rgb(" + newColorStr + ")";
+	};
 
 	var appendColorWidget = function($el, colorString, style) {
-		var colorVisualDiv = $("<div/>",
-			{css: {
+		var $sheetColorsContainer = $el.find("#sheet-colors");
+		var colorVisualDiv = $("<div/>",{
+			class : "style-selector-item",
+			css: {
 				"background-color": "rgb("+colorString+")",
-				"color" : invertRGB_ColorStr("rgb("+colorString+")"),
+				"color" : invertRGBColorString("rgb("+colorString+")"),
 				"padding" : "11px"
-			}
-		});
-		colorVisualDiv.data("style", style).html(style.selectorText + " <strong>" + style.styleName + "</strong>");
-		colorVisualDiv.click(function() {
-			var hexVal = prompt("Enter the new color in hexadecimal: ", "");
-			if ($.trim(hexVal) !== ""){
-				if (hexVal[0] !== "#") hexVal = "#" + hexVal;
-				if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
+			},
+			click: function() {
+				var hexVal = prompt("Enter the new color in hexadecimal: ", "");
+				if ($.trim(hexVal) !== ""){
+					if (hexVal[0] !== "#") hexVal = "#" + hexVal;
+					if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
 
-				} else {
+					} else {
 
+					}
+
+					var color = invertRGBColorString(hexToRgbString(hexVal));
+					$(this).css({
+						"background-color" : hexVal,
+						"color" : color
+					});
 				}
-				var color = invertRGB_ColorStr(hexToRgbString(hexVal));
-				$(this).css({
-					"background-color" : hexVal,
-					"color" : color
-				});
+				return false;
 			}
-		});
-		$el.find("#sheet-colors").append(colorVisualDiv);
+		}).hide();
+		var text = '<div class="style-selector-text" title="' + $('<div/>').text(style.selectorText).html() + '">' + style.selectorText + "</div> <u class=''>" + style.styleName + "</u>";
+		colorVisualDiv.data("style", style).html(text);
+		$sheetColorsContainer.append(colorVisualDiv);
+		colorVisualDiv.fadeIn("slow");
 	};
 
 
+	var getParentMatches = function  (elem) {
+		if (!elem) return [];
+		var e = $(elem).parent().get(0);
+		var s = styleController.getCSSRuleMatches(e);
+
+		if (s.length === 0) {
+			return getParentMatches(e);
+		} else {
+			return s;
+		}
+	};
 
 	Deep.on("sa.theme-roller.index.render", function(){
 		var self = this;
-		var styleController = new DynamicStyleController();
-		styleController.init();
+		var $el = this.$el;
 		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
 
 		// analyze each element and find dynamic style setting
-		this.$el.find("*").click(function() {
-			var matchedCSSRules = getMatchedCSSRules(this);
-			if (matchedCSSRules.length>0){
-				var rule ;
-				var sheetColorsDiv = self.$el.find("#sheet-colors").html("").show();
-				for (var m = 0; m < matchedCSSRules.length; m++) {
-					rule = matchedCSSRules[m];
-					for (var key in styleController.dynamicStyles) {
-						var styles = styleController.dynamicStyles[key];
-						for (var i = 0; i < styles.length; i++) {
-							var style = styles[i];
-							if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
-								appendColorWidget(self.$el, key, style);
-							}
-						}
-					}
+		$el.find("*").click(function() {
+			$el.find("#sheet-colors").empty();
+			var styleRules = styleController.getCSSRuleMatches(this);
+			if (styleRules.length === 0){
+				styleRules = getParentMatches(this);
+				for (var i = 0; i < styleRules.length; i++) {
+					var r = styleRules[i];
+					r.style.selectorText = r.style.selectorText; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
+					appendColorWidget($el, r.key, r.style);
 				}
-
-				if (sheetColorsDiv.children().length === 0) {
-					appendColorWidget(self.$el, "205,201,201", {selectorText:"No CSS color rules matched: ", styleName:"Maybe you want to define so CSS code?"});
-					for (m = 0; m < matchedCSSRules.length; m++) {
-						rule = matchedCSSRules[m];
-						appendColorWidget(self.$el, "205,201,201", {selectorText:rule, styleName:"test"});
-					}
+			} else {
+				for (var i = 0; i < styleRules.length; i++) {
+					var r = styleRules[i];
+					appendColorWidget($el, r.key, r.style);
 				}
-				console.log(matchedCSSRules,  this, $(this).css("background-color"));
 			}
+
 			return false;
 		});
-/*		$("*").each(function() {
-			var matchedCSSRules = getMatchedCSSRules(this);
-			// matched rule found! Find the dynammic css rule for this match.
-			if (matchedCSSRules.length>0){
-				for (var i = 0; i < styleController.dynamicStyles.length; i++) {
-					style = styleController.dynamicStyles[i];
-					debugger;
-				};
-				console.log(matchedCSSRules,  this, $(this).css("background-color"));
-			}
-		});*/
 	});
 })(jQuery, Deep);
