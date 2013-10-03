@@ -5,8 +5,6 @@
     right: 20px;
     top: 60px;
     width: 400px;
-    max-height: 80%;
-    overflow: auto;
     z-index: 3000;
     background-color: #333;
     border: solid 11px #333;
@@ -19,6 +17,11 @@
   }
   #sheet-colors-header{
     background-color: #333;
+  }
+
+  #sheet-colors-content{
+    overflow: auto;
+    max-height: 300px;
   }
 
   #sheet-colors-header, #sheet-colors-content{
@@ -37,17 +40,17 @@
 
 <div id="sheet-colors">  <!-- append me to body at runtime to make me available global -->
   <div id="sheet-colors-header">
-    <span id="sheet-colors-header-title"class="muted">Theme Roller</span>
+    <span id="sheet-colors-header-title"class="muted" title="deep-js Theme Roller">Roller</span>
     <div class="pull-right">
-      <a class="btn btn-mini" href="#">Minimize</a>
-      <a class="btn btn-mini" href="#">Save</a>
-      <a class="btn btn-mini disabled" href="#">Share</a>
-      <a class="btn btn-mini" href="#">Reset</a>
+      <a class="btn btn-mini" href="#">{{_ "Minimize"}}</a>
+      <a class="btn btn-mini" href="#">{{_ "Save"}}</a>
+      <a class="btn btn-mini disabled" href="#">{{_ "Share"}}</a>
+      <a class="btn btn-mini" href="#">{{_ "Reset"}}</a>
       <a class="btn btn-mini help" href="#">{{_ "Help"}}</a>
     </div>
   </div>
   <div id="sheet-colors-content"> <!-- append me to body at runtime to make me available global -->
-    <h4>{{_ "Please select an element anywhere on the page."}}</h4>
+    <h5>{{_ "Please select an element anywhere on the page."}}</h5>
     {{_ "I will find the CSS rules regarding to the clicked element if there are color informations available."}}
     <i>{{_ "You may also try to click the 'Help' button to get more informations about how this works."}}</i>
   </div>

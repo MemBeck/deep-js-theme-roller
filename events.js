@@ -282,17 +282,17 @@
 			steps: [
 			{
 				element: '#sheet-colors',
-				intro: "This is the Theme Roller Control. Here you can view CSS rules and edit their colors. To edit colors just click anywhere on the page on an element you want to change...",
+				intro: Deep.translate("help__text__1"),
 				position: 'left'
 			},
 			{
 				element: '#first-code-element',
-				intro: "Yes! Maybe this one... You may noticed that the Theme Roller Control has identified different color settings for this <code>H1 Element</code>. OK... Ready? Then let us change some colors now.",
+				intro: Deep.translate("help__text__2"),
 				position: 'bottom'
 			},
 			{
 				element: '#sheet-colors-header-title',
-				intro: 'The next step is very easy. Click on a color information you want to change and enter a color in hexadecimal or RGB format.<br>Well... It should be very easy now to creaty realy cool and fresh themes.',
+				intro: Deep.translate("help__text__3"),
 				position: 'left'
 			}
 			]
