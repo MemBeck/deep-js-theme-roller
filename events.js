@@ -1,6 +1,30 @@
 (function($, Deep) {
 
 
+	var isLocked = false;
+
+	$.fn.lockToggle = function () {
+	    var top = $(window).scrollTop();
+	    var left = $(window).scrollLeft();
+
+	    if(isLocked) { // locked so unlock
+
+	       isLocked = false;
+	       $('body').css('overflow', 'auto');
+	       $(window).unbind('scroll');
+
+	    } else { // unlocked so lock
+
+	        isLocked = true;
+	        $('body').css('overflow', 'hidden');
+	        $(window).scroll(function(){
+	            $(this).scrollTop(top).scrollLeft(left);
+	        });
+
+	    }
+
+	    return this;
+	};
 	function getMatchedCSSRules(node) {
 		var selectors = [];
 		if (!node || !node.ownerDocument) return [];
@@ -198,7 +222,7 @@
 	};
 
 	var appendColorWidget = function($el, colorString, style) {
-		var $sheetColorsContainer = $el.find("#sheet-colors");
+		var $sheetColorsContainer = $el.find("#sheet-colors-content");
 		var colorVisualDiv = $("<div/>",{
 			class : "style-selector-item",
 			css: {
@@ -210,7 +234,8 @@
 				var hexVal = prompt("Enter the new color in hexadecimal: ", "FF33CC");
 				if ($.trim(hexVal) !== ""){
 					if (hexVal[0] !== "#") hexVal = "#" + hexVal;
-/*					if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
+					/*
+					if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
 
 					} else {
 
@@ -249,17 +274,66 @@
 		}
 	};
 
+	var startIntro= function(){
+
+		$(window).scrollTop(0).lockToggle();
+		var intro = Deep.Web.UI.intro();
+		intro.setOptions({
+			steps: [
+			{
+				element: '#sheet-colors',
+				intro: "This is the Theme Roller Control. Here you can view CSS rules and edit their colors. To edit colors just click anywhere on the page on an element you want to change...",
+				position: 'left'
+			},
+			{
+				element: '#first-code-element',
+				intro: "Yes! Maybe this one... You may noticed that the Theme Roller Control has identified different color settings for this <code>H1 Element</code>. OK... Ready? Then let us change some colors now.",
+				position: 'bottom'
+			},
+			{
+				element: '#sheet-colors-header-title',
+				intro: 'The next step is very easy. Click on a color information you want to change and enter a color in hexadecimal or RGB format.<br>Well... It should be very easy now to creaty realy cool and fresh themes.',
+				position: 'left'
+			}
+			]
+		});
+
+		intro.onchange(function(targetElement) {
+			if ($(targetElement).attr("id") === "first-code-element"){
+				window.setTimeout(function () {
+					$(targetElement).trigger("click");
+					intro.refresh();
+				},1500);
+			}
+		});
+
+		intro.onexit (function(targetElement) {
+			$(window).lockToggle();
+		});
+
+		intro.oncomplete (function(targetElement) {
+			$(window).lockToggle();
+		});
+
+		intro.start();
+	};
+
 	styleController = new DynamicStyleController();
 	styleController.init();
 	Deep.on("sa.theme-roller.index.render", function(){
-//		styleController.applyCSS();
+		//		styleController.applyCSS();
 		var self = this;
 		var $el = this.$el;
 		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
 
+		$el.find("a.help").click(function() {
+			startIntro();
+			return false;
+		});
+
 		// analyze each element and find dynamic style setting
-		$el.find("*").click(function() {
-			$el.find("#sheet-colors").empty();
+		$el.find("*:not(#sheet-colors):not(#sheet-colors *)").click(function() {
+			$el.find("#sheet-colors-content").empty();
 			var styleRules = styleController.getCSSRuleMatches(this);
 			if (styleRules.length === 0){
 				styleRules = getParentMatches(this);
@@ -277,5 +351,8 @@
 
 			return false;
 		});
+
+
+
 	});
-})(jQuery, Deep);
+})(jQuery, window.Deep);
