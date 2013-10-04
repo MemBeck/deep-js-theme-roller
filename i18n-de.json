@@ -1,4 +1,5 @@
 [
+{"theme__roller__welcome" : "Dies ist die Theme Roller Test-Seite. Hier finden Sie alle Typografien oder GUI-Elemente, die in Ihrer Komposition vorhanden sind. Bitte versuchen Sie die Theme Roller Hilfe button in der oberen rechten Ecke, um weitere Informationen darüber zu erhalten wie diese Seite funktioniert."},
 {"Please select an element anywhere on the page." : "Bitte wählen sie ein Element auf der Seite aus."},
 {"Minimize" : "Minimieren"},
 {"Maximize" : "Maximieren"},
@@ -10,5 +11,7 @@
 {"help__text__3" : "Der nächste Schritt ist sehr einfach. Klicken Sie auf eine Farbe, die Sie verändern möchten, und geben Sie anschließend eine Farbe im Hexadezimal-oder RGB-Format ein. <br> Gut ... Es sollte jetzt wirklich ganz einfach sein coole und frische Themes zu erstellen."},
 {"intro__text__a" : "Bitte wählen Sie zunächst ein Element irgendwo auf der Seite aus."},
 {"intro__text__b" : "Wenn Farben definiert wurden, werde ich die passenden CSS Regeln anzeigen."},
-{"intro__text__c" : "Sie können auch den 'Hilfe' Knopf probieren, um herauszufinden wie das hier genau funktioniert."}
+{"intro__text__c" : "Sie können auch den 'Hilfe' Knopf probieren, um herauszufinden wie das hier genau funktioniert."},
+{"invalid__color__value" : "'{0}' ist keine gültige Farbe. Bitte geben Sie eine Farbe im Hexadezimal Format an.<br>Zum Beispiel: '[#B88A00] oder [B88A00]' oder im RGB Format '[184,138,0] oder [rgb(184,138,0)]' ein."},
+{"Please enter a color as hex- or RGB-value" : "Bitte geben Sie eine Farbe als Hex- oder RGB-Wert ein."}
 ]
