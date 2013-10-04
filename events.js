@@ -157,6 +157,10 @@
 
 	var Color = function(colorValue) {
 
+		this.equal = function(color) {
+			return ( this.r === color.r && this.g === color.g && this.b === color.b );
+		};
+
 		this.parseRGB = function(colorString) {
 			if (colorString === "transparent")   colorString = "rgb(255, 255, 255)";
 			var colorArray  = colorString.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
@@ -210,13 +214,12 @@
 
 
 		this.invertGoodReadable = function() {
+			var result = new Color("#ffffff");
 			if (((this.r + this.b + this.g) / 3) > 128) {
-				this.initializeBy("#000000");
-			} else {
-				this.initializeBy("#ffffff");
+				result.initializeBy("#000000");
 			}
 
-			return this;
+			return result;
 		};
 
 		this.toString = function() {
@@ -227,6 +230,7 @@
 			this.r = c.r;
 			this.g = c.g;
 			this.b = c.b;
+			this.err = false;
 		};
 
 		this.initializeBy = function(colorValue) {
@@ -242,9 +246,9 @@
 					color = this.hexToRgb(color);
 				}
 			}
-			this.initializeByNativeColorType(color);
+			if (color) this.initializeByNativeColorType(color);
 		};
-
+		this.err = true;
 		this.initializeBy(colorValue);
 
 		return this;
@@ -252,7 +256,7 @@
 
 
 	var widgetItemClick = function() {
-		var userValue = prompt("Enter the new color in hexadecimal: ", "FF33CC");
+		var userValue = prompt(Deep.translate("Please enter a color as hex- or RGB-value"), "FF33CC");
 		if ($.trim(userValue) !== ""){
 
 			if (userValue[0] !== "#") userValue = "#" + userValue;
@@ -263,18 +267,24 @@
 
 			}*/
 
-			var color = new Color(userValue);
 
 			//var color = invertRGBColorString(hexToRgbString(userValue));
-			var currentColor = $(this).css("background-color");
-			$(this).parent().children().each(function() {
-				var c = $(this).css("background-color");
-				if (c === currentColor)
-					$(this).css({
-						"background-color" : color.toString(),
-						"color" : color.invertGoodReadable().toString()
-					});
-			});
+			var currentColor = new Color($(this).css("background-color"));
+			var newColor = new Color(userValue);
+			if (newColor.err){
+				Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
+			} else {
+				$(this).parent().children().each(function() {
+					var colorStr = $(this).css("background-color");
+					var c = new Color(colorStr);
+
+					if (currentColor.equal(c))
+						$(this).css({
+							"background-color" : newColor.toString(),
+							"color" : newColor.invertGoodReadable().toString()
+						});
+				});
+			}
 		}
 		return false;
 	};
@@ -322,7 +332,7 @@
 			{
 				element: '#first-code-element',
 				intro: "help__text__2",
-				position: 'bottom'
+				position: 'top'
 			},
 			{
 				element: '#sheet-colors-header-title',
