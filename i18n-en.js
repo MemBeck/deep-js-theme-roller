@@ -1,3 +1,0 @@
-Deep.i18n["en"]["help__text__1"] = "This is the Theme Roller Control. Here you can view CSS rules and edit their colors. To edit colors just click anywhere on the page on an element you want to change...";
-Deep.i18n["en"]["help__text__2"] = "Yes! Maybe this one... You may noticed that the Theme Roller Control has identified different color settings for this <code>code Element</code>. OK... Ready? Then let us change some colors now.";
-Deep.i18n["en"]["help__text__3"] = "The next step is very easy. Click on a color information you want to change and enter a color in hexadecimal or RGB format.<br>Well... It should be very easy now to creaty realy cool and fresh themes.";
