@@ -1,5 +1,5 @@
 [
-{"theme__roller__welcome" : "Dies ist die Theme Roller Test-Seite. Hier finden Sie alle Typografien oder GUI-Elemente, die in Ihrer Komposition vorhanden sind. Bitte versuchen Sie die Theme Roller Hilfe button in der oberen rechten Ecke, um weitere Informationen darüber zu erhalten wie diese Seite funktioniert."},
+{"theme__roller__welcome" : "Dies ist die Theme Roller Test-Seite. Hier finden Sie alle Typografien oder GUI-Elemente, die in Ihrer Komposition vorhanden sind."},
 {"Please select an element anywhere on the page." : "Bitte wählen sie ein Element auf der Seite aus."},
 {"Minimize" : "Minimieren"},
 {"Maximize" : "Maximieren"},
@@ -7,7 +7,7 @@
 {"Help" : "Hilfe"},
 {"Reset" : "Zurücksetzen"},
 {"help__text__1" : "Dies ist die Theme Roller Steuerung. Hier sehen Sie CSS-Regeln und können ihre Farben bearbeiten. Klicken Sie nur irgendwo auf der Seite auf ein Element, das Sie ändern möchten..."},
-{"help__text__2" : "Ja! Warum nicht? Vielleicht dieses hier... Sie haben vielleicht bemerkt, dass das Theme Roller Control verschiedene Farbeinstellungen für dieses <code>Code Element</code> identifiziert hat. OK ... Bereit? Dann ändern wir jetzt einige Farben."},
+{"help__text__2" : "Ja! Warum nicht? Vielleicht dieses hier... Sie haben vielleicht bemerkt, dass das Theme Roller Control verschiedene Farbeinstellungen für diesen <code>Button</code> identifiziert hat. OK ... Bereit? Dann ändern wir jetzt einige Farben."},
 {"help__text__3" : "Der nächste Schritt ist sehr einfach. Klicken Sie auf eine Farbe, die Sie verändern möchten, und geben Sie anschließend eine Farbe im Hexadezimal-oder RGB-Format ein. <br> Gut ... Es sollte jetzt wirklich ganz einfach sein coole und frische Themes zu erstellen."},
 {"intro__text__a" : "Bitte wählen Sie zunächst ein Element irgendwo auf der Seite aus."},
 {"intro__text__b" : "Wenn Farben definiert wurden, werde ich die passenden CSS Regeln anzeigen."},

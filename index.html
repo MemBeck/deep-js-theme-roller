@@ -2,14 +2,11 @@
   #sheet-colors{
     cursor: pointer;
     position: fixed;
-    right: 20px;
-    top: 60px;
-    width: 400px;
+    right: 0;
+    top: 43px;
     z-index: 3000;
-    background-color: #333;
     border: solid 11px #333;
     border-radius: 11px;
-    color: white;
   }
 
   .style-selector-item{
@@ -37,30 +34,22 @@
   }
 </style>
 
-
-<div id="sheet-colors">  <!-- append me to body at runtime to make me available global -->
-  <div id="sheet-colors-header">
-    <span id="sheet-colors-header-title"class="muted" title="deep-js Theme Roller">Roller</span>
-    <div class="pull-right">
-      <a class="btn btn-mini minimize" href="#">{{_ "Minimize"}}</a>
-      <a class="btn btn-mini save" href="#">{{_ "Save"}}</a>
-      <a class="btn btn-mini disabled share" href="#">{{_ "Share"}}</a>
-      <a class="btn btn-mini reset" href="#">{{_ "Reset"}}</a>
-      <a class="btn btn-mini help" href="#">{{_ "Help"}}</a>
-    </div>
-  </div>
-  <div id="sheet-colors-content"> <!-- append me to body at runtime to make me available global -->
-    <h5>{{_ "intro__text__a"}}</h5>
-    {{_ "intro__text__b"}}
-    <i>{{_ "intro__text__c"}}</i>
-  </div>
+<div class="hero-unit visible-phone">
+  <h1>{{_ "Sorry"}}!</h1>
+  <p>{{_ "The Theme Roller is not good to handle on smartphones."}}</p>
 </div>
-<div class="span12">
+
+
+<div class="span8 hidden-phone">
 
   <div class="row">
-    <div class="span5">
+    <div class="span5 well">
       <h1>Theme Roller</h1>
-      {{_ "theme__roller__welcome"}}
+      <p>
+        {{_ "theme__roller__welcome"}}
+        <a id="theme-roller-help" href="help">{{_ "I Want to know more"}}.</a>
+      </p>
+      <a id="theme-roller-source" class="btn btn-info" href="https://github.com/s-a/deep-js-theme-roller">Source Code</a>
     </div>
   </div>
   <hr>
@@ -3566,5 +3555,22 @@
         </section>
     </div>
   </div>
+</div>
 
+<div id="sheet-colors" class="span6 hidden-phone">  <!-- append me to body at runtime to make me available global -->
+  <div id="sheet-colors-header">
+    <span id="sheet-colors-header-title"class="muted" title="deep-js Theme Roller">Roller</span>
+    <div class="pull-right">
+      <a class="btn btn-mini minimize" href="#">{{_ "Minimize"}}</a>
+      <a class="btn btn-mini save" href="#">{{_ "Save"}}</a>
+      <a class="btn btn-mini disabled share" href="#">{{_ "Share"}}</a>
+      <a class="btn btn-mini reset" href="#">{{_ "Reset"}}</a>
+      <a class="btn btn-mini help" href="#">{{_ "Help"}}</a>
+    </div>
+  </div>
+  <div id="sheet-colors-content" class="well"> <!-- append me to body at runtime to make me available global -->
+    <h5>{{_ "intro__text__a"}}</h5>
+    {{_ "intro__text__b"}}
+    <i class="alert-info">{{_ "intro__text__c"}}</i>
+  </div>
 </div>

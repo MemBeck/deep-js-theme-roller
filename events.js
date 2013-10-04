@@ -330,9 +330,9 @@
 				position: 'left'
 			},
 			{
-				element: '#first-code-element',
+				element: '#theme-roller-source',
 				intro: "help__text__2",
-				position: 'top'
+				position: 'right'
 			},
 			{
 				element: '#sheet-colors-header-title',
@@ -341,7 +341,7 @@
 			}
 			]
 		}).onchange(function function_name (targetElement) {
-			if ($(targetElement).attr("id") === "first-code-element"){
+			if ($(targetElement).attr("id") === "theme-roller-source"){
 				window.setTimeout(function () {
 					$(targetElement).trigger("click");
 					intro.refresh();
@@ -351,7 +351,7 @@
 	};
 
 	var initializeMenu = function($el) {
-		$el.find("a.help").click(function() {
+		$el.find("#theme-roller-help, a.help").click(function() {
 			commandStartIntro();
 			return false;
 		});
@@ -395,7 +395,7 @@
 		console.log("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
 		initializeMenu($el);
 		// analyze each element and find dynamic style setting
-		$el.find("*:not(#sheet-colors):not(#sheet-colors *)").click(function() {
+		$el.find("*:not(#sheet-colors):not(#sheet-colors *)").filter(":not(#theme-roller-help)").click(function() {
 			$el.find("#sheet-colors-content").empty();
 			var styleRules = styleController.getCSSRuleMatches(this);
 			if (styleRules.length === 0){
