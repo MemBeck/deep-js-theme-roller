@@ -2,7 +2,7 @@
   "author": "Stephan Ahlf <stephan@ahlf-it.de> (https://github.com/s-a/deep-js-theme-roller)",
   "name": "Theme Roller",
   "description": "Change, Create, share deep-js Themes.",
-  "version": "0.4.23",
+  "version": "0.5.1",
   "path":"sa/theme-roller",
   "licenses" : [
     {
