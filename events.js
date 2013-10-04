@@ -1,30 +1,7 @@
 (function($, Deep) {
 
 
-	var isLocked = false;
 
-	$.fn.lockToggle = function () {
-	    var top = $(window).scrollTop();
-	    var left = $(window).scrollLeft();
-
-	    if(isLocked) { // locked so unlock
-
-	       isLocked = false;
-	       $('body').css('overflow', 'auto');
-	       $(window).unbind('scroll');
-
-	    } else { // unlocked so lock
-
-	        isLocked = true;
-	        $('body').css('overflow', 'hidden');
-	        $(window).scroll(function(){
-	            $(this).scrollTop(top).scrollLeft(left);
-	        });
-
-	    }
-
-	    return this;
-	};
 	function getMatchedCSSRules(node) {
 		var selectors = [];
 		if (!node || !node.ownerDocument) return [];
@@ -276,46 +253,35 @@
 
 	var startIntro= function(){
 
-		$(window).scrollTop(0).lockToggle();
-		var intro = Deep.Web.UI.intro();
-		intro.setOptions({
+		Deep.Intro({
 			steps: [
 			{
 				element: '#sheet-colors',
-				intro: Deep.translate("help__text__1"),
+				intro: "help__text__1",
 				position: 'left'
 			},
 			{
 				element: '#first-code-element',
-				intro: Deep.translate("help__text__2"),
+				intro: "help__text__2",
 				position: 'bottom'
 			},
 			{
 				element: '#sheet-colors-header-title',
-				intro: Deep.translate("help__text__3"),
+				intro: "help__text__3",
 				position: 'left'
 			}
-			]
-		});
-
-		intro.onchange(function(targetElement) {
-			if ($(targetElement).attr("id") === "first-code-element"){
-				window.setTimeout(function () {
-					$(targetElement).trigger("click");
-					intro.refresh();
-				},1500);
+			],
+			onchange:function function_name (argument) {
+				if ($(targetElement).attr("id") === "first-code-element"){
+					window.setTimeout(function () {
+						$(targetElement).trigger("click");
+						intro.refresh();
+					},1500);
+				}
 			}
-		});
+		}).start();
 
-		intro.onexit (function(targetElement) {
-			$(window).lockToggle();
-		});
 
-		intro.oncomplete (function(targetElement) {
-			$(window).lockToggle();
-		});
-
-		intro.start();
 	};
 
 	styleController = new DynamicStyleController();
@@ -351,8 +317,5 @@
 
 			return false;
 		});
-
-
-
 	});
 })(jQuery, window.Deep);
