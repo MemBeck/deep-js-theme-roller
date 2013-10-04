@@ -98,7 +98,7 @@
 
 			var styles = document.styleSheets;
 
-			console.error("styles", styles);
+
 			// read css import rules
 			for (var s = 0; s < styles.length; s++) {
 				var style = styles[s];
@@ -155,82 +155,141 @@
 		return this;
 	};
 
-	var styleController;
-	var hexToRgb = function (hex) {
-    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-        return r + r + g + g + b + b;
-    });
+	var Color = function(colorValue) {
 
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
+		this.parseRGB = function(colorString) {
+			if (colorString === "transparent")   colorString = "rgb(255, 255, 255)";
+			var colorArray  = colorString.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
+			return colorArray ? {
+				r: parseInt(colorArray[1], 10),
+				g: parseInt(colorArray[2], 10),
+				b: parseInt(colorArray[3], 10)
+			} : null;
+		};
+
+		this.normalizeHexValue = function(hex) {
+			var res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			var result = null;
+			if (res){
+				result = hex;
+			} else {
+				result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec("#"+hex);
+				if (result) result = "#" + hex;
+			}
+			return result;
+		};
+
+		this.hexToRgb = function (hex) {
+			// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+			var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+			hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+				return r + r + g + g + b + b;
+			});
+
+			var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			return result ? {
+				r: parseInt(result[1], 16),
+				g: parseInt(result[2], 16),
+				b: parseInt(result[3], 16)
+			} : null;
+		};
+		/*
+		this.hexToRgbString = function (hex) {
+			var result = this.hexToRgb(hex);
+			return "rgb(" + result.r + "," + result.g + "," + result.b + ")";
+		};*/
+
+		this.componentToHex = function (c) {
+			var hex = c.toString(16);
+			return hex.length == 1 ? "0" + hex : hex;
+		};
+
+		this.rgbToHex = function(r, g, b) {
+			return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+		};
+
+
+		this.invertGoodReadable = function() {
+			if (((this.r + this.b + this.g) / 3) > 128) {
+				this.initializeBy("#000000");
+			} else {
+				this.initializeBy("#ffffff");
+			}
+
+			return this;
+		};
+
+		this.toString = function() {
+			return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+		};
+
+		this.initializeByNativeColorType = function(c) {
+			this.r = c.r;
+			this.g = c.g;
+			this.b = c.b;
+		};
+
+		this.initializeBy = function(colorValue) {
+			var color = colorValue;
+			if (color.r === undefined){
+				// try to parse hexadecimal.
+				color = this.normalizeHexValue(color);
+				if (color === null){
+					// try to parse rgb.
+					color = this.parseRGB(colorValue);
+				} else {
+					// parse hex
+					color = this.hexToRgb(color);
+				}
+			}
+			this.initializeByNativeColorType(color);
+		};
+
+		this.initializeBy(colorValue);
+
+		return this;
 	};
 
-	var hexToRgbString = function (hex) {
-		var result = hexToRgb(hex);
-		return "rgb(" + result.r + "," + result.g + "," + result.b + ")";
-	};
-	var componentToHex = function (c) {
-		var hex = c.toString(16);
-		return hex.length == 1 ? "0" + hex : hex;
-	};
-	var rgbToHex = function(r, g, b) {
-		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-	};
-	var invertRGBColorString = function(oldColorStr) {
-		//--- Special case
-		if (oldColorStr === "transparent")   oldColorStr = "rgb(255, 255, 255)";
 
-		//--- Color is text in RGB format.  EG: rgb(1, 22, 255)
-		var colorArray  = oldColorStr.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
+	var widgetItemClick = function() {
+		var userValue = prompt("Enter the new color in hexadecimal: ", "FF33CC");
+		if ($.trim(userValue) !== ""){
 
-		var newColorStr = $.map(colorArray, function (byte, J) {
-			if (!J) return null;
-			//--- Invert a decimal byte.
-			return Math.abs(255 - parseInt(byte, 10) );
-		}).join(",");
+			if (userValue[0] !== "#") userValue = "#" + userValue;
+			/*
+			if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
 
-		return "rgb(" + newColorStr + ")";
+			} else {
+
+			}*/
+
+			var color = new Color(userValue);
+
+			//var color = invertRGBColorString(hexToRgbString(userValue));
+			var currentColor = $(this).css("background-color");
+			$(this).parent().children().each(function() {
+				var c = $(this).css("background-color");
+				if (c === currentColor)
+					$(this).css({
+						"background-color" : color.toString(),
+						"color" : color.invertGoodReadable().toString()
+					});
+			});
+		}
+		return false;
 	};
 
 	var appendColorWidget = function($el, colorString, style) {
 		var $sheetColorsContainer = $el.find("#sheet-colors-content");
+		var color = new Color("rgb("+colorString+")");
 		var colorVisualDiv = $("<div/>",{
 			class : "style-selector-item",
 			css: {
-				"background-color": "rgb("+colorString+")",
-				"color" : invertRGBColorString("rgb("+colorString+")"),
+				"background-color": color.toString(),
+				"color" : color.invertGoodReadable().toString(),
 				"padding" : "11px"
 			},
-			click: function() {
-				var hexVal = prompt("Enter the new color in hexadecimal: ", "FF33CC");
-				if ($.trim(hexVal) !== ""){
-					if (hexVal[0] !== "#") hexVal = "#" + hexVal;
-					/*
-					if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
-
-					} else {
-
-					}*/
-
-					var color = invertRGBColorString(hexToRgbString(hexVal));
-					var currentColor = $(this).css("background-color");
-					$(this).parent().children().each(function() {
-						var c = $(this).css("background-color");
-						if (c === currentColor)
-							$(this).css({
-								"background-color" : hexVal,
-								"color" : color
-							});
-					});
-				}
-				return false;
-			}
+			click: widgetItemClick
 		}).hide();
 		var text = '<div class="style-selector-text" title="' + $('<div/>').text(style.selectorText).html() + '">' + style.selectorText + "</div> <u class=''>" + style.styleName + "</u>";
 		colorVisualDiv.data("style", style).html(text);
@@ -251,9 +310,9 @@
 		}
 	};
 
-	var startIntro= function(){
+	var commandStartIntro = function(){
 
-		Deep.Intro({
+		var intro = Deep.Intro({
 			steps: [
 			{
 				element: '#sheet-colors',
@@ -270,18 +329,51 @@
 				intro: "help__text__3",
 				position: 'left'
 			}
-			],
-			onchange:function function_name (argument) {
-				if ($(targetElement).attr("id") === "first-code-element"){
-					window.setTimeout(function () {
-						$(targetElement).trigger("click");
-						intro.refresh();
-					},1500);
-				}
+			]
+		}).onchange(function function_name (targetElement) {
+			if ($(targetElement).attr("id") === "first-code-element"){
+				window.setTimeout(function () {
+					$(targetElement).trigger("click");
+					intro.refresh();
+				},1500);
 			}
 		}).start();
+	};
 
+	var initializeMenu = function($el) {
+		$el.find("a.help").click(function() {
+			commandStartIntro();
+			return false;
+		});
 
+		var $contentArea = $el.find("#sheet-colors-content");
+		$el.find("a.minimize").kick(
+			function(){
+				$(this).text(Deep.translate("Maximize")).toggleClass("active");
+				$contentArea.slideUp();
+				return false;
+			},
+			function(){
+				$(this).text(Deep.translate("Minimize")).toggleClass("active");
+				$contentArea.slideDown();
+				return false;
+			}
+		);
+
+		$el.find("a.save").click(function() {
+			alert("not implemented yet");
+			return false;
+		});
+
+		$el.find("a.share").click(function() {
+			alert("not implemented yet");
+			return false;
+		});
+
+		$el.find("a.reset").click(function() {
+			alert("not implemented yet");
+			return false;
+		});
 	};
 
 	styleController = new DynamicStyleController();
@@ -290,13 +382,8 @@
 		//		styleController.applyCSS();
 		var self = this;
 		var $el = this.$el;
-		console.warn("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
-
-		$el.find("a.help").click(function() {
-			startIntro();
-			return false;
-		});
-
+		console.log("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
+		initializeMenu($el);
 		// analyze each element and find dynamic style setting
 		$el.find("*:not(#sheet-colors):not(#sheet-colors *)").click(function() {
 			$el.find("#sheet-colors-content").empty();
