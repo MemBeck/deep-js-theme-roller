@@ -26,6 +26,7 @@
 		//var rgbArr = [];
 		var self = this;
 		self.originalStyleText = styleValue;
+		self.styleName = styleName;
 		// try{
 
 			this.styleText = styleValue.replace(matchItems, function (match/*, content, off , s*/){
@@ -72,8 +73,9 @@
 						// {
 
 					if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
-						var colorValues = new CSSColorRow(style);
+						var colorValues = new CSSColorRow(key, style);
 						if (colorValues.count !== 0){
+
 
 
 							var test = new DynamicStyle(rule.selectorText, key, style);
@@ -162,7 +164,9 @@
 		return this;
 	};
 
-	var Color = function(colorValue) {
+	var Color = function(colorValue, colorType) {
+
+		this.type = colorType;
 
 		this.equal = function(color) {
 			return ( this.r === color.r && this.g === color.g && this.b === color.b );
@@ -185,7 +189,6 @@
 			colorString = colorString.replace(/(\d+)/, "{b}");
 			colorString = colorString.replace(/(\.\d+|\d+\.\d+)/, "{a}");
 			this.colorString = colorString;
-			console.warn(result);
 			return result;
 		};
 
@@ -232,7 +235,7 @@
 
 
 		this.invertGoodReadable = function() {
-			var result = new Color("#ffffff");
+			var result = new Color("#ffffff", this.colorType);
 			if (((this.r + this.b + this.g) / 3) > 128) {
 				result.initializeBy("#000000");
 			}
@@ -293,13 +296,14 @@
 		return this;
 	};
 
-	var CSSColorRow = function(cssText) {
+	var CSSColorRow = function(styleName, cssText) {
 
 			var currentColorIndex = 0;
 			var parsed = false;
 
 			this.oldString = this.newString = cssText;
 			this.colors = [];
+			this.styleName = styleName;
 
 			var parse = function(row) {
 				var colorArray  = row.newString.match (/\((\d+)\s?,\s?(\d+)\s?,\s?(\d+),?\s?(\.\d+|\d+\.\d+)?\)+/);
@@ -309,9 +313,9 @@
 						g:colorArray[2],
 						b:colorArray[3],
 						a:colorArray[4],
-					});
+					}, styleName);
 
-					var newColor = new Color(colorArray[0]); // parse again to hold the original css text format
+					var newColor = new Color(colorArray[0], styleName); // parse again to hold the original css text format
 					row.colors.push(newColor);
 					row.newString = row.newString.replace(newColor.toString(),"{"+currentColorIndex+"}");
 					currentColorIndex++;
@@ -335,7 +339,6 @@
 			return this;
 	};
 
-var test = new CSSColorRow("rgba(0, 0, 0, 0.0470588) 0px 1px 1px inset");
 
 
 	var widgetItemClick = function() {
@@ -352,14 +355,14 @@ var test = new CSSColorRow("rgba(0, 0, 0, 0.0470588) 0px 1px 1px inset");
 
 
 			//var color = invertRGBColorString(hexToRgbString(userValue));
-			var currentColor = new Color($(this).css("background-color"));
-			var newColor = new Color(userValue);
+			var currentColor = new Color($(this).css("background-color"), "background-color");
+			var newColor = new Color(userValue, "background-color");
 			if (newColor.err){
 				Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
 			} else {
 				$(this).parent().children().each(function() {
 					var colorStr = $(this).css("background-color");
-					var c = new Color(colorStr);
+					var c = new Color(colorStr, "background-color");
 
 					if (currentColor.equal(c))
 						$(this).css({
@@ -372,30 +375,35 @@ var test = new CSSColorRow("rgba(0, 0, 0, 0.0470588) 0px 1px 1px inset");
 		return false;
 	};
 
-	var appendColorWidget = function(color, $el, colorString, style) {
+	var appendColorWidget = function(colors, $el, colorString, style) {
 		var $sheetColorsContainer = $el.find("#sheet-colors-content");
-		var c = color.toString();
-		var colorVisualDiv = $("<div/>",{
-			class : "style-selector-item",
-			css: {
-				"background-color": c,
-				"color" : color.invertGoodReadable().toString(),
-				"padding" : "11px"
-			},
-			click: widgetItemClick
-		}).hide();
+		var c = colors.toString();
+		var ColorVisualDiv = function  (c) {
+			return $("<div/>",{
+				class : "style-selector-item",
+				css: {
+					"background-color": style.originalStyleText,
+					"color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
+					"padding" : "11px"
+				},
+				click: widgetItemClick
+			}).hide();
+		};
+
 		style.selector = $('<div/>').text(style.selectorText).html();
 
-		var template = Handlebars.compile(' <div>{{styleName}} GAGA</div>');
-		var renderedTemplate = template(style);
-		$sheetColorsContainer.append(renderedTemplate);
-
-
-
 		var text = '<div class="small style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <u class=''>" + style.styleName + " (" + style.originalStyleText + ")</u>";
-		colorVisualDiv.data("style", style).html(text);
+		colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
 		$sheetColorsContainer.append(colorVisualDiv);
-		colorVisualDiv.fadeIn("fast");
+
+		for (var cc = 0; cc < colors.colors.length; cc++) {
+			var color = colors.colors[cc];
+			var template = Handlebars.compile('<div>{{type}}:{{colorString}}</div>');
+			var renderedTemplate = template(color);
+			colorVisualDiv.append(renderedTemplate);
+		}
+
+		colorVisualDiv.show("fast");
 	};
 
 
@@ -494,13 +502,10 @@ var test = new CSSColorRow("rgba(0, 0, 0, 0.0470588) 0px 1px 1px inset");
 					var r = styleRules[i];
 					r.style.selectorText = r.style.selectorText;// + " - " + r.style.sortOrder; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
 
-					var colors = new CSSColorRow(r.style.originalStyleText);
-					for (var c = 0; c < colors.count; c++) {
-						for (var cc = 0; cc < colors.colors.length; cc++) {
-							var color = colors.colors[cc];
-							appendColorWidget(color, $el, r.key, r.style);
-						};
-					}
+					var colors = new CSSColorRow(r.style.styleName, r.style.originalStyleText);
+					appendColorWidget(colors, $el, r.key, r.style);
+
+
 				}
 			};
 
