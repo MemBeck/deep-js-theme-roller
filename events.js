@@ -68,18 +68,25 @@
 			var processSelector = function(rule){
 				for (var key in rule.style){
 					var style = rule.style[key];
-					if (typeof (style) === "string" && key !== "cssText" && style.indexOf("rgb") !== -1){
 
-						var test = new DynamicStyle(rule.selectorText, key, style);
-						if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
-							var v = test.r + "," + test.g + "," + test.b;
-							if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
-							self.dynamicStyles[v].push(test);
-							test.sortOrder = self.dynamicStylesCount;
-							self.dynamicStylesCount++;
+						// {
+
+					if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
+						var colorValues = new CSSColorRow(style);
+						if (colorValues.count !== 0){
+
+
+							var test = new DynamicStyle(rule.selectorText, key, style);
+							if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
+								var v = test.r + "," + test.g + "," + test.b;
+								if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
+								self.dynamicStyles[v].push(test);
+								test.sortOrder = self.dynamicStylesCount;
+								self.dynamicStylesCount++;
+							}
+
+							test.val();
 						}
-
-						test.val();
 						//console.log(rule.selectorText, key, style);
 					}
 				}
