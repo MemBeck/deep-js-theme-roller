@@ -162,13 +162,24 @@
 		};
 
 		this.parseRGB = function(colorString) {
+
 			if (colorString === "transparent")   colorString = "rgb(255, 255, 255)";
-			var colorArray  = colorString.match (/\((\d+),\s?(\d+),\s?(\d+)\)/);
-			return colorArray ? {
+			var colorArray  = colorString.match (/\((\d+)\s?,\s?(\d+)\s?,\s?(\d+),?\s?((\.\d+|\d+\.\d+))?\)/);
+
+			var result = colorArray ? {
 				r: parseInt(colorArray[1], 10),
 				g: parseInt(colorArray[2], 10),
-				b: parseInt(colorArray[3], 10)
+				b: parseInt(colorArray[3], 10),
+				a: parseFloat(colorArray[4])
 			} : null;
+
+			colorString = colorString.replace(/(\d+)/, "{r}");
+			colorString = colorString.replace(/(\d+)/, "{g}");
+			colorString = colorString.replace(/(\d+)/, "{b}");
+			colorString = colorString.replace(/(\.\d+|\d+\.\d+)/, "{a}");
+			this.colorString = colorString;
+			console.warn(result);
+			return result;
 		};
 
 		this.normalizeHexValue = function(hex) {
@@ -222,14 +233,35 @@
 			return result;
 		};
 
+
 		this.toString = function() {
-			return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+			var rgbValueString = "" ;
+			if (this.colorString){
+				result = this.colorString;
+				result = result.replace("{r}", this.r);
+				result = result.replace("{g}", this.g);
+				result = result.replace("{b}", this.b);
+				result = result.replace("{a}", this.a);
+				if (this.a){
+					result = "rgba" + result;
+				} else {
+					result = "rgb" + result;
+				}
+			} else {
+				if (this.a){
+					result = "rgba(" + this.r + "," + this.g + "," + this.b + "," + this.a + ")";
+				} else {
+					result = "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+				}
+			}
+			return result;
 		};
 
 		this.initializeByNativeColorType = function(c) {
 			this.r = c.r;
 			this.g = c.g;
 			this.b = c.b;
+			this.a = c.a;
 			this.err = false;
 		};
 
@@ -253,6 +285,50 @@
 
 		return this;
 	};
+
+	var CSSColorRow = function(cssText) {
+
+			var currentColorIndex = 0;
+			var parsed = false;
+
+			this.oldString = this.newString = cssText;
+			this.colors = [];
+
+			var parse = function(row) {
+				var colorArray  = row.newString.match (/\((\d+)\s?,\s?(\d+)\s?,\s?(\d+),?\s?(\.\d+|\d+\.\d+)?\)+/);
+				if (colorArray){
+					var color = new Color({
+						r:colorArray[1],
+						g:colorArray[2],
+						b:colorArray[3],
+						a:colorArray[4],
+					});
+
+					var newColor = new Color(colorArray[0]); // parse again to hold the original css text format
+					row.colors.push(newColor);
+					row.newString = row.newString.replace(newColor.toString(),"{"+currentColorIndex+"}");
+					currentColorIndex++;
+				} else {
+					parsed = true;
+				}
+			};
+
+			while(!parsed) parse(this);
+
+			this.toString = function() {
+				var result = this.newString;
+				for (var i = 0; i < this.colors.length; i++) {
+					var color = this.colors[i];
+					result = result.replace("{"+i+"}", color.toString());
+				}
+
+				return result;
+			};
+			this.count = currentColorIndex;
+			return this;
+	};
+
+var test = new CSSColorRow("rgba(0, 0, 0, 0.0470588) 0px 1px 1px inset");
 
 
 	var widgetItemClick = function() {
@@ -289,22 +365,30 @@
 		return false;
 	};
 
-	var appendColorWidget = function($el, colorString, style) {
+	var appendColorWidget = function(color, $el, colorString, style) {
 		var $sheetColorsContainer = $el.find("#sheet-colors-content");
-		var color = new Color("rgb("+colorString+")");
+		var c = color.toString();
 		var colorVisualDiv = $("<div/>",{
 			class : "style-selector-item",
 			css: {
-				"background-color": color.toString(),
+				"background-color": c,
 				"color" : color.invertGoodReadable().toString(),
 				"padding" : "11px"
 			},
 			click: widgetItemClick
 		}).hide();
-		var text = '<div class="style-selector-text" title="' + $('<div/>').text(style.selectorText).html() + '">' + style.selectorText + "</div> <u class=''>" + style.styleName + "</u>";
+		style.selector = $('<div/>').text(style.selectorText).html();
+
+		var template = Handlebars.compile(' <div>{{styleName}} GAGA</div>');
+		var renderedTemplate = template(style);
+		$sheetColorsContainer.append(renderedTemplate);
+
+
+
+		var text = '<div class="small style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <u class=''>" + style.styleName + " (" + style.originalStyleText + ")</u>";
 		colorVisualDiv.data("style", style).html(text);
 		$sheetColorsContainer.append(colorVisualDiv);
-		colorVisualDiv.fadeIn("slow");
+		colorVisualDiv.fadeIn("fast");
 	};
 
 
@@ -398,19 +482,24 @@
 		$el.find("*:not(#sheet-colors):not(#sheet-colors *)").filter(":not(#theme-roller-help)").click(function() {
 			$el.find("#sheet-colors-content").empty();
 			var styleRules = styleController.getCSSRuleMatches(this);
-			if (styleRules.length === 0){
-				styleRules = getParentMatches(this);
+			var renderColorWidgets = function(styleRules) {
 				for (var i = 0; i < styleRules.length; i++) {
 					var r = styleRules[i];
 					r.style.selectorText = r.style.selectorText;// + " - " + r.style.sortOrder; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
-					appendColorWidget($el, r.key, r.style);
+
+					var colors = new CSSColorRow(r.style.originalStyleText);
+					for (var c = 0; c < colors.count; c++) {
+						for (var cc = 0; cc < colors.colors.length; cc++) {
+							var color = colors.colors[cc];
+							appendColorWidget(color, $el, r.key, r.style);
+						};
+					}
 				}
-			} else {
-				for (var a = 0; a < styleRules.length; a++) {
-					var ru = styleRules[a];
-					appendColorWidget($el, ru.key, ru.style);
-				}
-			}
+			};
+
+			if (styleRules.length === 0) styleRules = getParentMatches(this);
+
+			renderColorWidgets(styleRules);
 
 			return false;
 		});
