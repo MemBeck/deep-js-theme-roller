@@ -1,38 +1,40 @@
 <style>
+  .style-selector-item:hover{
+    background-color: #333;
+    color: ghostwhite!important;
+  }
+
   #sheet-colors{
     position: fixed;
     right: 0;
     top: 43px;
     z-index: 3000;
     border: solid 11px #333;
-    border-radius: 11px;background-color: white;
-
+    border-radius: 11px;
+    background-color: white;
   }
 
   .style-selector-item{
     border-bottom: solid 1px #333;
+    padding: 3px;
   }
   #sheet-colors-header{
     width: 100%;
   }
 
   #sheet-colors-content{
-
     overflow: auto;
     max-height: 300px;
   }
 
   #sheet-colors-header, #sheet-colors-content{
-    padding: 11px;
+    padding: 6px;
   }
   .theme-roller-style-container{
-
     text-overflow: ellipsis;
     width: inherit;
     white-space: nowrap;
     overflow: hidden;
-    background-color: white;
-    color: black;
     font-size: 80%;
   }
 </style>

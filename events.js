@@ -342,6 +342,11 @@
 	};
 
 	var colorChangeSet = [];
+	remove = function(arr, from, to) {
+		var rest = arr.slice((to || from) + 1 || arr.length);
+		arr.length = from < 0 ? arr.length + from : from;
+		return arr.push.apply(arr, rest);
+	};
 	var getChangeSetIndex = function(compareColor) {
 		var result = -1;
 		for (var i = 0; i < colorChangeSet.length; i++) {
@@ -398,6 +403,7 @@
 		};
 
 		var colorWidgetItemValueChanged = function(e, reason) {
+
 			if(reason === 'save' /*|| reason === 'cancel'*/) {
 				var $e = $(e.currentTarget);
 				var userValue = $(e.currentTarget).text();
@@ -426,10 +432,11 @@
 							} else {
 								colorChangeSet[colorSetupIndex] = newColor;
 							}
-
 						}
 					});
 					styleController.applyCSS();
+
+					currentElement.click();
 				}
 			}
 		};
@@ -451,8 +458,9 @@
 
 			style.selector = $('<div/>').text(style.selectorText).html();
 
-			var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'>" + style.styleName + " (" + style.originalStyleText + ")</div><br>";
+			var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'><strong>" + style.styleName + "</strong> (" + style.originalStyleText + ")</div><br>";
 			colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
+
 			$sheetColorsContainer.append(colorVisualDiv);
 
 			for (var cc = 0; cc < colors.colors.length; cc++) {
@@ -461,9 +469,17 @@
 
 				var previousChangedColorIndex = getChangeSetIndex(color);
 				if ( previousChangedColorIndex !== -1 ){
+					var resetButton = $('<input type="button" class="btn btn-mini" value="reset">');
+					colorVisualDiv.append(resetButton);
 					var previousChangedColor = colorChangeSet[previousChangedColorIndex];
 					color.assignColor(previousChangedColor);
+					resetButton.click(function() {
+						remove(colorChangeSet, previousChangedColorIndex);
+						styleController.applyCSS();
+						currentElement.click();
+					});
 				}
+
 				var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
 
 				var renderedTemplate = $(template(color)).editable({
@@ -569,6 +585,7 @@
 
 		styleController = new DynamicStyleController();
 		styleController.init();
+		var currentElement = null;
 		Deep.on("sa.theme-roller.index.render", function(){
 
 			var self = this;
@@ -577,6 +594,7 @@
 			initializeMenu($el);
 			// analyze each element and find dynamic style setting
 			$el.find("*:not(#sheet-colors):not(#sheet-colors *)").filter(":not(#theme-roller-help)").click(function() {
+				currentElement = $(this);
 				$el.find("#sheet-colors-content").empty();
 				var styleRules = styleController.getCSSRuleMatches(this);
 				var renderColorWidgets = function(styleRules) {
