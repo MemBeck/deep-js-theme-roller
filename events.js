@@ -72,23 +72,23 @@
 
 						// {
 
-					if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
-						var colorValues = new CSSColorRow(key, style);
-						if (colorValues.count !== 0){
+							if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
+								var colorValues = new CSSColorRow(key, style);
+								if (colorValues.count !== 0){
 
 
 
-							var test = new DynamicStyle(rule.selectorText, key, style);
-							if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
-								var v = test.r + "," + test.g + "," + test.b;
-								if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
-								self.dynamicStyles[v].push(test);
-								test.sortOrder = self.dynamicStylesCount;
-								self.dynamicStylesCount++;
-							}
+									var test = new DynamicStyle(rule.selectorText, key, style);
+									if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
+										var v = test.r + "," + test.g + "," + test.b;
+										if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
+										self.dynamicStyles[v].push(test);
+										test.sortOrder = self.dynamicStylesCount;
+										self.dynamicStylesCount++;
+									}
 
-							test.val();
-						}
+									test.val();
+								}
 						//console.log(rule.selectorText, key, style);
 					}
 				}
@@ -133,17 +133,17 @@
 					if (rul)
 						processCss(rul);
 				}
-		};
+			};
 
-		this.init = function() {
-			this.getStyles();
-		};
+			this.init = function() {
+				this.getStyles();
+			};
 
-		this.getCSSRuleMatches = function(element) {
-			var result = [];
-			var matchedCSSRules = getMatchedCSSRules(element);
-			if (matchedCSSRules.length>0){
-				var rule ;
+			this.getCSSRuleMatches = function(element) {
+				var result = [];
+				var matchedCSSRules = getMatchedCSSRules(element);
+				if (matchedCSSRules.length>0){
+					var rule ;
 				// get all current rules matching this element
 				for (var m = 0; m < matchedCSSRules.length; m++) {
 					rule = matchedCSSRules[m];
@@ -190,6 +190,17 @@
 			colorString = colorString.replace(/(\.\d+|\d+\.\d+)/, "{a}");
 			this.colorString = colorString;
 			return result;
+		};
+
+		this.getColorFromName = function(name) {
+			var rgb,
+			tmp = document.body.appendChild(document.createElement("div"));
+
+			tmp.style.backgroundColor = name;
+			rgb = window.getComputedStyle(tmp, null).backgroundColor;
+			this.colorString = rgb;
+
+			return new Color(rgb);
 		};
 
 		this.normalizeHexValue = function(hex) {
@@ -252,10 +263,12 @@
 				result = result.replace("{g}", this.g);
 				result = result.replace("{b}", this.b);
 				result = result.replace("{a}", this.a);
-				if (this.a){
-					result = "rgba" + result;
-				} else {
-					result = "rgb" + result;
+				if (result.indexOf("rgb") === -1){
+					if (this.a){
+						result = "rgba" + result;
+					} else {
+						result = "rgb" + result;
+					}
 				}
 			} else {
 				if (this.a){
@@ -283,6 +296,10 @@
 				if (color === null){
 					// try to parse rgb.
 					color = this.parseRGB(colorValue);
+					if (color === null){
+
+						//color = this.getColorFromName(colorValue);
+					}
 				} else {
 					// parse hex
 					color = this.hexToRgb(color);
@@ -298,22 +315,22 @@
 
 	var CSSColorRow = function(styleName, cssText) {
 
-			var currentColorIndex = 0;
-			var parsed = false;
+		var currentColorIndex = 0;
+		var parsed = false;
 
-			this.oldString = this.newString = cssText;
-			this.colors = [];
-			this.styleName = styleName;
+		this.oldString = this.newString = cssText;
+		this.colors = [];
+		this.styleName = styleName;
 
-			var parse = function(row) {
-				var colorArray  = row.newString.match (/\((\d+)\s?,\s?(\d+)\s?,\s?(\d+),?\s?(\.\d+|\d+\.\d+)?\)+/);
-				if (colorArray){
-					var color = new Color({
-						r:colorArray[1],
-						g:colorArray[2],
-						b:colorArray[3],
-						a:colorArray[4],
-					}, styleName);
+		var parse = function(row) {
+			var colorArray  = row.newString.match (/\((\d+)\s?,\s?(\d+)\s?,\s?(\d+),?\s?(\.\d+|\d+\.\d+)?\)+/);
+			if (colorArray){
+				var color = new Color({
+					r:colorArray[1],
+					g:colorArray[2],
+					b:colorArray[3],
+					a:colorArray[4],
+				}, styleName);
 
 					var newColor = new Color(colorArray[0], styleName); // parse again to hold the original css text format
 					row.colors.push(newColor);
@@ -337,151 +354,151 @@
 			};
 			this.count = currentColorIndex;
 			return this;
-	};
+		};
 
 
 
 
-	var appendColorWidget = function(colors, $el, colorString, style) {
-		var $sheetColorsContainer = $el.find("#sheet-colors-content");
-		var c = colors.toString();
-		var ColorVisualDiv = function  (c) {
-			return $("<div/>",{
-				class : "style-selector-item",
-				css: {
-					"background-color": style.originalStyleText,
-					"color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
-					"padding" : "11px"
+		var appendColorWidget = function(colors, $el, colorString, style) {
+			var $sheetColorsContainer = $el.find("#sheet-colors-content");
+			var c = colors.toString();
+			var ColorVisualDiv = function  (c) {
+				return $("<div/>",{
+					class : "style-selector-item",
+					css: {
+						"background-color": style.originalStyleText,
+						"color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
+						"padding" : "11px"
 				}/*,
 				click: widgetItemClick*/
 			}).hide();
+			};
+
+			style.selector = $('<div/>').text(style.selectorText).html();
+
+			var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'>" + style.styleName + " (" + style.originalStyleText + ")</div><br>";
+			colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
+			$sheetColorsContainer.append(colorVisualDiv);
+
+			for (var cc = 0; cc < colors.colors.length; cc++) {
+				var color = colors.colors[cc];
+				var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
+
+				var renderedTemplate = $(template(color)).editable({
+
+				}).on('hidden', function(e, reason) {
+
+					if(reason === 'save' /*|| reason === 'cancel'*/) {
+
+						var userValue = $(e.currentTarget).text();
+						var newColor = new Color(userValue);
+						if (newColor.err){
+							Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
+						} else {
+							var currentColor = new Color($(e.currentTarget).parent().css("background-color"), "background-color");
+							$(e.currentTarget).parent().parent().children().each(function() {
+								var colorStr = $(this).css("background-color");
+								var c = new Color(colorStr, "background-color");
+
+								if (currentColor.equal(c))
+									$(this).css({
+										"background-color" : newColor.toString(),
+										"color" : newColor.invertGoodReadable().toString()
+									});
+							});
+						}
+					}
+
+				});
+
+				colorVisualDiv.append(renderedTemplate);
+			}
+
+			colorVisualDiv.show("fast");
 		};
 
-		style.selector = $('<div/>').text(style.selectorText).html();
 
-		var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'>" + style.styleName + " (" + style.originalStyleText + ")</div><br>";
-		colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
-		$sheetColorsContainer.append(colorVisualDiv);
+		var getParentMatches = function  (elem) {
+			if (!elem) return [];
+			var e = $(elem).parent().get(0);
+			var s = styleController.getCSSRuleMatches(e);
 
-		for (var cc = 0; cc < colors.colors.length; cc++) {
-			var color = colors.colors[cc];
-			var template = Handlebars.compile('<a>' + color.toString() + '</a>');
+			if (s.length === 0) {
+				return getParentMatches(e);
+			} else {
+				return s;
+			}
+		};
 
-			var renderedTemplate = $(template(color)).editable({
+		var commandStartIntro = function(){
 
-			}).on('hidden', function(e, reason) {
-
-				if(reason === 'save' /*|| reason === 'cancel'*/) {
-
-					var currentColor = new Color($sheetColorsContainer.css("background-color"), "background-color");
-					var userValue = $(e.currentTarget).text();
-					var newColor = new Color(userValue);
-					if (newColor.err){
-						Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
-					} else {
-						$(e.currentTarget).parent().parent().children().each(function() {
-							var colorStr = $(this).css("background-color");
-							var c = new Color(colorStr, "background-color");
-
-							//if (currentColor.equal(c))
-								$(this).css({
-									"background-color" : newColor.toString(),
-									"color" : newColor.invertGoodReadable().toString()
-								});
-						});
-					}
+			var intro = Deep.Intro({
+				steps: [
+				{
+					element: '#sheet-colors',
+					intro: "help__text__1",
+					position: 'left'
+				},
+				{
+					element: '#theme-roller-source',
+					intro: "help__text__2",
+					position: 'right'
+				},
+				{
+					element: '#sheet-colors-header-title',
+					intro: "help__text__3",
+					position: 'left'
 				}
+				]
+			}).onchange(function function_name (targetElement) {
+				if ($(targetElement).attr("id") === "theme-roller-source"){
+					window.setTimeout(function () {
+						$(targetElement).trigger("click");
+						intro.refresh();
+					},1500);
+				}
+			}).start();
+		};
 
+		var initializeMenu = function($el) {
+			$el.find("#theme-roller-help, a.help").click(function() {
+				commandStartIntro();
+				return false;
 			});
 
-			colorVisualDiv.append(renderedTemplate);
-		}
+			var $contentArea = $el.find("#sheet-colors-content");
+			$el.find("a.minimize").kick(
+				function(){
+					$(this).text(Deep.translate("Maximize")).toggleClass("active");
+					$contentArea.slideUp();
+					return false;
+				},
+				function(){
+					$(this).text(Deep.translate("Minimize")).toggleClass("active");
+					$contentArea.slideDown();
+					return false;
+				}
+				);
 
-		colorVisualDiv.show("fast");
-	};
-
-
-	var getParentMatches = function  (elem) {
-		if (!elem) return [];
-		var e = $(elem).parent().get(0);
-		var s = styleController.getCSSRuleMatches(e);
-
-		if (s.length === 0) {
-			return getParentMatches(e);
-		} else {
-			return s;
-		}
-	};
-
-	var commandStartIntro = function(){
-
-		var intro = Deep.Intro({
-			steps: [
-			{
-				element: '#sheet-colors',
-				intro: "help__text__1",
-				position: 'left'
-			},
-			{
-				element: '#theme-roller-source',
-				intro: "help__text__2",
-				position: 'right'
-			},
-			{
-				element: '#sheet-colors-header-title',
-				intro: "help__text__3",
-				position: 'left'
-			}
-			]
-		}).onchange(function function_name (targetElement) {
-			if ($(targetElement).attr("id") === "theme-roller-source"){
-				window.setTimeout(function () {
-					$(targetElement).trigger("click");
-					intro.refresh();
-				},1500);
-			}
-		}).start();
-	};
-
-	var initializeMenu = function($el) {
-		$el.find("#theme-roller-help, a.help").click(function() {
-			commandStartIntro();
-			return false;
-		});
-
-		var $contentArea = $el.find("#sheet-colors-content");
-		$el.find("a.minimize").kick(
-			function(){
-				$(this).text(Deep.translate("Maximize")).toggleClass("active");
-				$contentArea.slideUp();
+			$el.find("a.save").click(function() {
+				alert("not implemented yet");
 				return false;
-			},
-			function(){
-				$(this).text(Deep.translate("Minimize")).toggleClass("active");
-				$contentArea.slideDown();
+			});
+
+			$el.find("a.share").click(function() {
+				alert("not implemented yet");
 				return false;
-			}
-		);
+			});
 
-		$el.find("a.save").click(function() {
-			alert("not implemented yet");
-			return false;
-		});
+			$el.find("a.reset").click(function() {
+				alert("not implemented yet");
+				return false;
+			});
+		};
 
-		$el.find("a.share").click(function() {
-			alert("not implemented yet");
-			return false;
-		});
-
-		$el.find("a.reset").click(function() {
-			alert("not implemented yet");
-			return false;
-		});
-	};
-
-	styleController = new DynamicStyleController();
-	styleController.init();
-	Deep.on("sa.theme-roller.index.render", function(){
+		styleController = new DynamicStyleController();
+		styleController.init();
+		Deep.on("sa.theme-roller.index.render", function(){
 		//		styleController.applyCSS();
 		var self = this;
 		var $el = this.$el;
