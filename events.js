@@ -196,11 +196,16 @@
 			var rgb,
 			tmp = document.body.appendChild(document.createElement("div"));
 
-			tmp.style.backgroundColor = name;
+			tmp.style.backgroundColor = name.toLowerCase();
 			rgb = window.getComputedStyle(tmp, null).backgroundColor;
 			this.colorString = rgb;
+			var color = this.parseRGB(this.colorString);
 
-			return new Color(rgb);
+			if (!color || !color.r || color.r===0 && color.g===0 && color.b===0 && this.colorString !== "black"){
+				return null;
+			} else {
+				return color;
+			}
 		};
 
 		this.normalizeHexValue = function(hex) {
@@ -297,8 +302,8 @@
 					// try to parse rgb.
 					color = this.parseRGB(colorValue);
 					if (color === null){
-
-						//color = this.getColorFromName(colorValue);
+						// try get color by name string
+						color = this.getColorFromName(colorValue);
 					}
 				} else {
 					// parse hex
@@ -389,17 +394,17 @@
 				}).on('hidden', function(e, reason) {
 
 					if(reason === 'save' /*|| reason === 'cancel'*/) {
-
+						var $e = $(e.currentTarget);
 						var userValue = $(e.currentTarget).text();
 						var newColor = new Color(userValue);
 						if (newColor.err){
 							Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
 						} else {
 							var currentColor = new Color($(e.currentTarget).parent().css("background-color"), "background-color");
-							$(e.currentTarget).parent().parent().children().each(function() {
+							$e.editable('setValue', newColor.toString());
+							$e.parent().parent().children().each(function() {
 								var colorStr = $(this).css("background-color");
 								var c = new Color(colorStr, "background-color");
-
 								if (currentColor.equal(c))
 									$(this).css({
 										"background-color" : newColor.toString(),
