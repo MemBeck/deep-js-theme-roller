@@ -6,17 +6,18 @@
     top: 43px;
     z-index: 3000;
     border: solid 11px #333;
-    border-radius: 11px;
+    border-radius: 11px;background-color: white;
   }
 
   .style-selector-item{
     border-bottom: solid 1px #333;
   }
   #sheet-colors-header{
-    background-color: #333;
+    width: 100%;
   }
 
   #sheet-colors-content{
+
     overflow: auto;
     max-height: 300px;
   }
@@ -24,13 +25,15 @@
   #sheet-colors-header, #sheet-colors-content{
     padding: 11px;
   }
-  .style-selector-text{
-    font-weight: bold;
+  .theme-roller-style-container{
+
     text-overflow: ellipsis;
     width: inherit;
-    width: 100%;
     white-space: nowrap;
     overflow: hidden;
+    background-color: white;
+    color: black;
+    font-size: 80%;
   }
 </style>
 
@@ -3561,8 +3564,8 @@
 
 <div id="sheet-colors" class="span6 hidden-phone">  <!-- append me to body at runtime to make me available global -->
   <div id="sheet-colors-header">
-    <span id="sheet-colors-header-title"class="muted" title="deep-js Theme Roller">Roller</span>
-    <div class="pull-right">
+    <div id="sheet-colors-header-title"class="muted" title="deep-js Theme Roller">Roller</div>
+    <div class="nav-bar nar-bar-header">
       <a class="btn btn-mini minimize" href="#">{{_ "Minimize"}}</a>
       <a class="btn btn-mini save" href="#">{{_ "Save"}}</a>
       <a class="btn btn-mini disabled share" href="#">{{_ "Share"}}</a>

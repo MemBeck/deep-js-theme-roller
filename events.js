@@ -341,39 +341,6 @@
 
 
 
-	var widgetItemClick = function() {
-		var userValue = prompt(Deep.translate("Please enter a color as hex- or RGB-value"), "FF33CC");
-		if ($.trim(userValue) !== ""){
-
-			if (userValue[0] !== "#") userValue = "#" + userValue;
-			/*
-			if (confirm('YES = Change only this CSS property\nNO  = Change all CSS classes and properties with the same color')) {
-
-			} else {
-
-			}*/
-
-
-			//var color = invertRGBColorString(hexToRgbString(userValue));
-			var currentColor = new Color($(this).css("background-color"), "background-color");
-			var newColor = new Color(userValue, "background-color");
-			if (newColor.err){
-				Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
-			} else {
-				$(this).parent().children().each(function() {
-					var colorStr = $(this).css("background-color");
-					var c = new Color(colorStr, "background-color");
-
-					if (currentColor.equal(c))
-						$(this).css({
-							"background-color" : newColor.toString(),
-							"color" : newColor.invertGoodReadable().toString()
-						});
-				});
-			}
-		}
-		return false;
-	};
 
 	var appendColorWidget = function(colors, $el, colorString, style) {
 		var $sheetColorsContainer = $el.find("#sheet-colors-content");
@@ -385,21 +352,48 @@
 					"background-color": style.originalStyleText,
 					"color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
 					"padding" : "11px"
-				},
-				click: widgetItemClick
+				}/*,
+				click: widgetItemClick*/
 			}).hide();
 		};
 
 		style.selector = $('<div/>').text(style.selectorText).html();
 
-		var text = '<div class="small style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <u class=''>" + style.styleName + " (" + style.originalStyleText + ")</u>";
+		var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'>" + style.styleName + " (" + style.originalStyleText + ")</div><br>";
 		colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
 		$sheetColorsContainer.append(colorVisualDiv);
 
 		for (var cc = 0; cc < colors.colors.length; cc++) {
 			var color = colors.colors[cc];
-			var template = Handlebars.compile('<div>{{type}}:{{colorString}}</div>');
-			var renderedTemplate = template(color);
+			var template = Handlebars.compile('<a>' + color.toString() + '</a>');
+
+			var renderedTemplate = $(template(color)).editable({
+
+			}).on('hidden', function(e, reason) {
+
+				if(reason === 'save' /*|| reason === 'cancel'*/) {
+
+					var currentColor = new Color($sheetColorsContainer.css("background-color"), "background-color");
+					var userValue = $(e.currentTarget).text();
+					var newColor = new Color(userValue);
+					if (newColor.err){
+						Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
+					} else {
+						$(e.currentTarget).parent().parent().children().each(function() {
+							var colorStr = $(this).css("background-color");
+							var c = new Color(colorStr, "background-color");
+
+							//if (currentColor.equal(c))
+								$(this).css({
+									"background-color" : newColor.toString(),
+									"color" : newColor.invertGoodReadable().toString()
+								});
+						});
+					}
+				}
+
+			});
+
 			colorVisualDiv.append(renderedTemplate);
 		}
 
