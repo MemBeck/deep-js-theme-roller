@@ -378,31 +378,31 @@
 					a:colorArray[4],
 				}, styleName);
 
-					var newColor = new Color(colorArray[0], styleName); // parse again to hold the original css text format
-					row.colors.push(newColor);
-					row.newString = row.newString.replace(newColor.toString(),"{"+currentColorIndex+"}");
-					currentColorIndex++;
-				} else {
-					parsed = true;
-				}
-			};
-
-			while(!parsed) parse(this);
-
-			this.toString = function() {
-				var result = this.newString;
-				for (var i = 0; i < this.colors.length; i++) {
-					var color = this.colors[i];
-					result = result.replace("{"+i+"}", color.toString());
-				}
-
-				return result;
-			};
-			this.count = currentColorIndex;
-			return this;
+				var newColor = new Color(colorArray[0], styleName); // parse again to hold the original css text format
+				row.colors.push(newColor);
+				row.newString = row.newString.replace(newColor.toString(),"{"+currentColorIndex+"}");
+				currentColorIndex++;
+			} else {
+				parsed = true;
+			}
 		};
 
-		var colorWidgetItemValueChanged = function(e, reason) {
+		while(!parsed) parse(this);
+
+		this.toString = function() {
+			var result = this.newString;
+			for (var i = 0; i < this.colors.length; i++) {
+				var color = this.colors[i];
+				result = result.replace("{"+i+"}", color.toString());
+			}
+
+			return result;
+		};
+		this.count = currentColorIndex;
+		return this;
+	};
+
+	var colorWidgetItemValueChanged = function(e, reason) {
 
 			if(reason === 'save' /*|| reason === 'cancel'*/) {
 				var $e = $(e.currentTarget);
@@ -439,153 +439,155 @@
 					currentElement.click();
 				}
 			}
+	};
+
+	var render = function(colors, $el, colorString, style) {
+		var $sheetColorsContainer = $el.find("#sheet-colors-content");
+		var c = colors.toString();
+		var ColorVisualDiv = function  (c) {
+			return $("<div/>",{
+				class : "style-selector-item",
+				css: {
+					// "background-color": style.originalStyleText,
+					// "color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
+					//"padding" : "11px"
+			}/*,
+			click: widgetItemClick*/
+			}).hide();
 		};
 
-		var render = function(colors, $el, colorString, style) {
-			var $sheetColorsContainer = $el.find("#sheet-colors-content");
-			var c = colors.toString();
-			var ColorVisualDiv = function  (c) {
-				return $("<div/>",{
-					class : "style-selector-item",
-					css: {
-						// "background-color": style.originalStyleText,
-						// "color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
-						//"padding" : "11px"
-				}/*,
-				click: widgetItemClick*/
-				}).hide();
-			};
+		style.selector = $('<div/>').text(style.selectorText).html();
 
-			style.selector = $('<div/>').text(style.selectorText).html();
+		var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'><strong>" + style.styleName + "</strong> (" + style.originalStyleText + ")</div><br>";
+		colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
 
-			var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'><strong>" + style.styleName + "</strong> (" + style.originalStyleText + ")</div><br>";
-			colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
+		$sheetColorsContainer.append(colorVisualDiv);
 
-			$sheetColorsContainer.append(colorVisualDiv);
+		for (var cc = 0; cc < colors.colors.length; cc++) {
+			var color = colors.colors[cc];
+			color.style = style;
 
-			for (var cc = 0; cc < colors.colors.length; cc++) {
-				var color = colors.colors[cc];
-				color.style = style;
-
-				var previousChangedColorIndex = getChangeSetIndex(color);
-				if ( previousChangedColorIndex !== -1 ){
-					var resetButton = $('<input type="button" class="btn btn-mini" value="reset">');
-					colorVisualDiv.append(resetButton);
-					var previousChangedColor = colorChangeSet[previousChangedColorIndex];
-					color.assignColor(previousChangedColor);
-					resetButton.click(function() {
-						remove(colorChangeSet, previousChangedColorIndex);
-						styleController.applyCSS();
-						currentElement.click();
-					});
-				}
-
-				var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
-
-				var renderedTemplate = $(template(color)).editable({
-
-				}).on('hidden', colorWidgetItemValueChanged).data("color", color).css({
-						"background-color": color.toString(),
-						"color" : color.invertGoodReadable().toString(),
-						//"padding" : "11px"
+			var previousChangedColorIndex = getChangeSetIndex(color);
+			if ( previousChangedColorIndex !== -1 ){
+				var resetButton = $('<input type="button" class="btn btn-mini btn-warning" value="reset">');
+				colorVisualDiv.append(resetButton);
+				var previousChangedColor = colorChangeSet[previousChangedColorIndex];
+				color.assignColor(previousChangedColor);
+				resetButton.click(function() {
+					remove(colorChangeSet, previousChangedColorIndex);
+					styleController.applyCSS();
+					currentElement.click();
 				});
-
-				colorVisualDiv.append(renderedTemplate);
 			}
 
-			colorVisualDiv.fadeIn();
-		};
+			var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
 
-		var getParentMatches = function  (elem) {
-			if (!elem) return [];
-			var e = $(elem).parent().get(0);
-			var s = styleController.getCSSRuleMatches(e);
+			var renderedTemplate = $(template(color)).editable({
 
-			if (s.length === 0) {
-				return getParentMatches(e);
-			} else {
-				return s;
+			}).on('hidden', colorWidgetItemValueChanged).data("color", color).css({
+					"background-color": color.toString(),
+					"color" : color.invertGoodReadable().toString(),
+					"margin-right" : "5px"
+					//"padding" : "11px"
+			});
+
+			colorVisualDiv.append(renderedTemplate);
+		}
+
+		colorVisualDiv.fadeIn();
+	};
+
+	var getParentMatches = function  (elem) {
+		if (!elem) return [];
+		var e = $(elem).parent().get(0);
+		var s = styleController.getCSSRuleMatches(e);
+
+		if (s.length === 0) {
+			return getParentMatches(e);
+		} else {
+			return s;
+		}
+	};
+
+	var commandStartIntro = function(){
+
+		var intro = Deep.Intro({
+			steps: [
+			{
+				element: '#sheet-colors',
+				intro: "help__text__1",
+				position: 'left'
+			},
+			{
+				element: '#theme-roller-source',
+				intro: "help__text__2",
+				position: 'right'
+			},
+			{
+				element: '#sheet-colors-header-title',
+				intro: "help__text__3",
+				position: 'left'
 			}
-		};
+			]
+		}).onchange(function function_name (targetElement) {
+			if ($(targetElement).attr("id") === "theme-roller-source"){
+				window.setTimeout(function () {
+					$(targetElement).trigger("click");
+					intro.refresh();
+				},1500);
+			}
+		}).start();
+	};
 
-		var commandStartIntro = function(){
+	var initializeMenu = function($el) {
+		$el.find("#theme-roller-help, a.help").click(function() {
+			commandStartIntro();
+			return false;
+		});
 
-			var intro = Deep.Intro({
-				steps: [
-				{
-					element: '#sheet-colors',
-					intro: "help__text__1",
-					position: 'left'
-				},
-				{
-					element: '#theme-roller-source',
-					intro: "help__text__2",
-					position: 'right'
-				},
-				{
-					element: '#sheet-colors-header-title',
-					intro: "help__text__3",
-					position: 'left'
-				}
-				]
-			}).onchange(function function_name (targetElement) {
-				if ($(targetElement).attr("id") === "theme-roller-source"){
-					window.setTimeout(function () {
-						$(targetElement).trigger("click");
-						intro.refresh();
-					},1500);
-				}
-			}).start();
-		};
-
-		var initializeMenu = function($el) {
-			$el.find("#theme-roller-help, a.help").click(function() {
-				commandStartIntro();
+		var $contentArea = $el.find("#sheet-colors-content");
+		$el.find("a.minimize").kick(
+			function(){
+				$(this).text(Deep.translate("Maximize")).toggleClass("active");
+				$contentArea.slideUp();
 				return false;
-			});
-
-			var $contentArea = $el.find("#sheet-colors-content");
-			$el.find("a.minimize").kick(
-				function(){
-					$(this).text(Deep.translate("Maximize")).toggleClass("active");
-					$contentArea.slideUp();
-					return false;
-				},
-				function(){
-					$(this).text(Deep.translate("Minimize")).toggleClass("active");
-					$contentArea.slideDown();
-					return false;
-				}
-				);
-
-			$el.find("a.save").click(function() {
-				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-				alert("not implemented yet");
+			},
+			function(){
+				$(this).text(Deep.translate("Minimize")).toggleClass("active");
+				$contentArea.slideDown();
 				return false;
-			});
+			}
+			);
 
-			$el.find("a.undo").click(function() {
-				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-				alert("not implemented yet");
-				return false;
-			});
+		$el.find("a.save").click(function() {
+			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
+			alert("not implemented yet");
+			return false;
+		});
 
-			$el.find("a.share").click(function() {
-				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-				alert("not implemented yet");
-				return false;
-			});
+		$el.find("a.load").click(function() {
+			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
+			alert("not implemented yet");
+			return false;
+		});
 
-			$el.find("a.reset").click(function() {
-				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-				alert("not implemented yet");
-				return false;
-			});
-		};
+		$el.find("a.share").click(function() {
+			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
+			alert("not implemented yet");
+			return false;
+		});
 
-		styleController = new DynamicStyleController();
-		styleController.init();
-		var currentElement = null;
+		$el.find("a.reset").click(function() {
+			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
+			alert("not implemented yet");
+			return false;
+		});
+	};
+
+	styleController = new DynamicStyleController();
+	styleController.init();
+	var currentElement = null;
+
 		Deep.on("sa.theme-roller.index.render", function(){
 
 			var self = this;
