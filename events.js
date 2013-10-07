@@ -62,15 +62,13 @@
 
 		this.applyCSS = function(){
 			var result = [];
-			result.push("<style>");
 			for (var i = 0; i < colorChangeSet.length; i++) {
 				var color = colorChangeSet[i];
 				result.push(color.style.selectorText + "{");
 					result.push(color.type + ": " + color.toString() + ";");
 				result.push("}");
 			}
-			result.push("</style>");
-			var res = $(result.join("\n"));
+			var res = result.join("\n");
 			style.html(res);
 		};
 
@@ -189,6 +187,7 @@
 			this.b = color.b;
 			this.a = color.a;
 			this.colorString = color.colorString;
+			return this;
 		};
 
 		this.parseRGB = function(colorString) {
@@ -338,6 +337,18 @@
 	};
 
 	var colorChangeSet = [];
+	var getChangeSetIndex = function(compareColor) {
+		var result = -1;
+		for (var i = 0; i < colorChangeSet.length; i++) {
+			var color = colorChangeSet[i];
+			if (color.style.selectorText === compareColor.style.selectorText && color.type === compareColor.type){
+				result = i;
+				break;
+			}
+		}
+		return result;
+	};
+
 	var CSSColorRow = function(styleName, cssText) {
 
 		var currentColorIndex = 0;
@@ -389,21 +400,30 @@
 				if (newColor.err){
 					Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
 				} else {
+
 					// fetch original color data which contains styleClass and property name info
-					var originalColorData = $e.data("color");
-					originalColorData.assignColor(newColor);
-					var currentColor = new Color($(e.currentTarget).parent().css("background-color"), "background-color");
-					$e.editable('setValue', originalColorData.toString());
+					var currentColor = $e.data("color"); //new Color($(e.currentTarget).parent().css("background-color"), "background-color");
+					newColor = currentColor.assignColor(newColor);
 					$e.parent().parent().children().each(function() {
-						var colorStr = $(this).css("background-color");
-						var c = new Color(colorStr, "background-color");
-						if (currentColor.equal(c))
+						var c = $(this).find("a").data("color"); // new Color(colorStr, "background-color");
+						if (c.equal(currentColor)){
+							// apply color change!
+							$e.editable('setValue', newColor.toString());
+
 							$(this).css({
-								"background-color" : originalColorData.toString(),
-								"color" : originalColorData.invertGoodReadable().toString()
-							});
+								"background-color" : newColor.toString(),
+								"color" : newColor.invertGoodReadable().toString()
+							}).data("color", newColor);
+
+							var colorSetupIndex = getChangeSetIndex(currentColor);
+							if (colorSetupIndex === -1){
+								colorChangeSet.push(newColor);
+							} else {
+								colorChangeSet[colorSetupIndex] = newColor;
+							}
+
+						}
 					});
-					colorChangeSet.push(originalColorData);
 					styleController.applyCSS();
 				}
 			}
@@ -433,6 +453,12 @@
 			for (var cc = 0; cc < colors.colors.length; cc++) {
 				var color = colors.colors[cc];
 				color.style = style;
+
+				var previousChangedColorIndex = getChangeSetIndex(color);
+				if ( previousChangedColorIndex !== -1 ){
+					var previousChangedColor = colorChangeSet[previousChangedColorIndex];
+					color.assignColor(previousChangedColor);
+				}
 				var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
 
 				var renderedTemplate = $(template(color)).editable({
