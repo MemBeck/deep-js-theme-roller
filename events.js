@@ -1,8 +1,8 @@
 (function($, Deep) {
 
 
-
-	function getMatchedCSSRules(node) {
+	var styleController = null;
+	var getMatchedCSSRules = function(node) {
 		var selectors = [];
 		if (!node || !node.ownerDocument) return [];
 		var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, "");
@@ -14,7 +14,7 @@
 			}
 		}
 		return selectors;
-	}
+	};
 
 	var DynamicStyle = function(selectorText, styleName, styleValue) {
 		this.selectorText = selectorText;
@@ -53,14 +53,25 @@
 		return this;
 	};
 
+	var style = $("<style/>");
+	style.appendTo("body");
 	var DynamicStyleController = function() {
 		var self = this;
 		this.dynamicStyles = [];
 		this.dynamicStylesCount = 0;
 
 		this.applyCSS = function(){
-			var style = $("<style>body,html{background-color:green;}</style>");
-			style.appendTo("body");
+			var result = [];
+			result.push("<style>");
+			for (var i = 0; i < colorChangeSet.length; i++) {
+				var color = colorChangeSet[i];
+				result.push(color.style.selectorText + "{");
+					result.push(color.type + ": " + color.toString() + ";");
+				result.push("}");
+			}
+			result.push("</style>");
+			var res = $(result.join("\n"));
+			style.html(res);
 		};
 
 		this.getStyles = function($element) {
@@ -170,6 +181,14 @@
 
 		this.equal = function(color) {
 			return ( this.r === color.r && this.g === color.g && this.b === color.b );
+		};
+
+		this.assignColor = function(color) {
+			this.r = color.r;
+			this.g = color.g;
+			this.b = color.b;
+			this.a = color.a;
+			this.colorString = color.colorString;
 		};
 
 		this.parseRGB = function(colorString) {
@@ -318,6 +337,7 @@
 		return this;
 	};
 
+	var colorChangeSet = [];
 	var CSSColorRow = function(styleName, cssText) {
 
 		var currentColorIndex = 0;
@@ -361,10 +381,35 @@
 			return this;
 		};
 
+		var colorWidgetItemValueChanged = function(e, reason) {
+			if(reason === 'save' /*|| reason === 'cancel'*/) {
+				var $e = $(e.currentTarget);
+				var userValue = $(e.currentTarget).text();
+				var newColor = new Color(userValue);
+				if (newColor.err){
+					Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
+				} else {
+					// fetch original color data which contains styleClass and property name info
+					var originalColorData = $e.data("color");
+					originalColorData.assignColor(newColor);
+					var currentColor = new Color($(e.currentTarget).parent().css("background-color"), "background-color");
+					$e.editable('setValue', originalColorData.toString());
+					$e.parent().parent().children().each(function() {
+						var colorStr = $(this).css("background-color");
+						var c = new Color(colorStr, "background-color");
+						if (currentColor.equal(c))
+							$(this).css({
+								"background-color" : originalColorData.toString(),
+								"color" : originalColorData.invertGoodReadable().toString()
+							});
+					});
+					colorChangeSet.push(originalColorData);
+					styleController.applyCSS();
+				}
+			}
+		};
 
-
-
-		var appendColorWidget = function(colors, $el, colorString, style) {
+		var render = function(colors, $el, colorString, style) {
 			var $sheetColorsContainer = $el.find("#sheet-colors-content");
 			var c = colors.toString();
 			var ColorVisualDiv = function  (c) {
@@ -376,7 +421,7 @@
 						"padding" : "11px"
 				}/*,
 				click: widgetItemClick*/
-			}).hide();
+				}).hide();
 			};
 
 			style.selector = $('<div/>').text(style.selectorText).html();
@@ -387,41 +432,18 @@
 
 			for (var cc = 0; cc < colors.colors.length; cc++) {
 				var color = colors.colors[cc];
+				color.style = style;
 				var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
 
 				var renderedTemplate = $(template(color)).editable({
 
-				}).on('hidden', function(e, reason) {
-
-					if(reason === 'save' /*|| reason === 'cancel'*/) {
-						var $e = $(e.currentTarget);
-						var userValue = $(e.currentTarget).text();
-						var newColor = new Color(userValue);
-						if (newColor.err){
-							Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
-						} else {
-							var currentColor = new Color($(e.currentTarget).parent().css("background-color"), "background-color");
-							$e.editable('setValue', newColor.toString());
-							$e.parent().parent().children().each(function() {
-								var colorStr = $(this).css("background-color");
-								var c = new Color(colorStr, "background-color");
-								if (currentColor.equal(c))
-									$(this).css({
-										"background-color" : newColor.toString(),
-										"color" : newColor.invertGoodReadable().toString()
-									});
-							});
-						}
-					}
-
-				});
+				}).on('hidden', colorWidgetItemValueChanged).data("color", color);
 
 				colorVisualDiv.append(renderedTemplate);
 			}
 
-			colorVisualDiv.show("fast");
+			colorVisualDiv.fadeIn();
 		};
-
 
 		var getParentMatches = function  (elem) {
 			if (!elem) return [];
@@ -486,16 +508,25 @@
 				);
 
 			$el.find("a.save").click(function() {
+				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
+				alert("not implemented yet");
+				return false;
+			});
+
+			$el.find("a.undo").click(function() {
+				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
 				alert("not implemented yet");
 				return false;
 			});
 
 			$el.find("a.share").click(function() {
+				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
 				alert("not implemented yet");
 				return false;
 			});
 
 			$el.find("a.reset").click(function() {
+				if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
 				alert("not implemented yet");
 				return false;
 			});
@@ -504,32 +535,32 @@
 		styleController = new DynamicStyleController();
 		styleController.init();
 		Deep.on("sa.theme-roller.index.render", function(){
-		//		styleController.applyCSS();
-		var self = this;
-		var $el = this.$el;
-		console.log("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
-		initializeMenu($el);
-		// analyze each element and find dynamic style setting
-		$el.find("*:not(#sheet-colors):not(#sheet-colors *)").filter(":not(#theme-roller-help)").click(function() {
-			$el.find("#sheet-colors-content").empty();
-			var styleRules = styleController.getCSSRuleMatches(this);
-			var renderColorWidgets = function(styleRules) {
-				for (var i = 0; i < styleRules.length; i++) {
-					var r = styleRules[i];
-					r.style.selectorText = r.style.selectorText;// + " - " + r.style.sortOrder; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
 
-					var colors = new CSSColorRow(r.style.styleName, r.style.originalStyleText);
-					appendColorWidget(colors, $el, r.key, r.style);
+			var self = this;
+			var $el = this.$el;
+			console.log("Styles initialized", styleController.dynamicStylesCount, styleController.dynamicStyles);
+			initializeMenu($el);
+			// analyze each element and find dynamic style setting
+			$el.find("*:not(#sheet-colors):not(#sheet-colors *)").filter(":not(#theme-roller-help)").click(function() {
+				$el.find("#sheet-colors-content").empty();
+				var styleRules = styleController.getCSSRuleMatches(this);
+				var renderColorWidgets = function(styleRules) {
+					for (var i = 0; i < styleRules.length; i++) {
+						var r = styleRules[i];
+						r.style.selectorText = r.style.selectorText;// + " - " + r.style.sortOrder; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
+
+						var colors = new CSSColorRow(r.style.styleName, r.style.originalStyleText);
+						render(colors, $el, r.key, r.style);
 
 
-				}
-			};
+					}
+				};
 
-			if (styleRules.length === 0) styleRules = getParentMatches(this);
+				if (styleRules.length === 0) styleRules = getParentMatches(this);
 
-			renderColorWidgets(styleRules);
+				renderColorWidgets(styleRules);
 
-			return false;
+				return false;
+			});
 		});
-	});
 })(jQuery, window.Deep);

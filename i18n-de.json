@@ -5,6 +5,8 @@
 {"Maximize" : "Maximieren"},
 {"Save" : "Speichern"},
 {"Help" : "Hilfe"},
+{"Undo" : "Rückgängig"},
+{"Share" : "Teilen"},
 {"Reset" : "Zurücksetzen"},
 {"help__text__1" : "Dies ist die Theme Roller Steuerung. Hier sehen Sie CSS-Regeln und können ihre Farben bearbeiten. Klicken Sie nur irgendwo auf der Seite auf ein Element, das Sie ändern möchten..."},
 {"help__text__2" : "Ja! Warum nicht? Vielleicht dieses hier... Sie haben vielleicht bemerkt, dass das Theme Roller Control verschiedene Farbeinstellungen für diesen <code>Button</code> identifiziert hat. OK ... Bereit? Dann ändern wir jetzt einige Farben."},
