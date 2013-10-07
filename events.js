@@ -65,7 +65,12 @@
 			for (var i = 0; i < colorChangeSet.length; i++) {
 				var color = colorChangeSet[i];
 				result.push(color.style.selectorText + "{");
-					result.push(color.type + ": " + color.toString() + ";");
+
+					var type = color.type.split(/(?=[A-Z])/);
+					for (var t = 0; t < type.length; t++) {
+						type[t] = type[t].toLowerCase();
+					}
+					result.push(type.join("-") + ": " + color.toString() + ";");
 				result.push("}");
 			}
 			var res = result.join("\n");
@@ -436,9 +441,9 @@
 				return $("<div/>",{
 					class : "style-selector-item",
 					css: {
-						"background-color": style.originalStyleText,
-						"color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
-						"padding" : "11px"
+						// "background-color": style.originalStyleText,
+						// "color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
+						//"padding" : "11px"
 				}/*,
 				click: widgetItemClick*/
 				}).hide();
@@ -463,7 +468,11 @@
 
 				var renderedTemplate = $(template(color)).editable({
 
-				}).on('hidden', colorWidgetItemValueChanged).data("color", color);
+				}).on('hidden', colorWidgetItemValueChanged).data("color", color).css({
+						"background-color": color.toString(),
+						"color" : color.invertGoodReadable().toString(),
+						//"padding" : "11px"
+				});
 
 				colorVisualDiv.append(renderedTemplate);
 			}
