@@ -78,7 +78,12 @@
 
 	Deep.getScript("/api/sa/theme-roller/theme-roller-js/theme-roller.js", function() {
 
-		ThemeRoller.init(this.$el);
+		ThemeRoller.init(this.$el, {
+			"translate" : Deep.translate,
+			"error": function(userValue) {
+				Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
+			}
+		});
 		Deep.on("sa.theme-roller.index.render", function(){
 			var self = this;
 			var $el = this.$el;

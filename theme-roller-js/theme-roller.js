@@ -1,3 +1,9 @@
+/*!
+	ThemeRoller JavaScript Library
+	Copyright Stephan Ahlf (ahlf-it.de)
+	https://github.com/s-a/deep-js-theme-roller
+	MIT and GPL licensed.
+*/
 ;(function(window, $) {
 
 
@@ -54,6 +60,12 @@
 	};
 
 	var style = $("<style/>");
+	var errorMethod = function (userValue) {
+		alert("invalid__color__value: " + userValue);
+	};
+	var translateMethod = function (v) {
+		return v;
+	};
 	style.appendTo("body");
 	var DynamicStyleController = function() {
 		var self = this;
@@ -84,7 +96,7 @@
 					var userValue = $(e.currentTarget).text();
 					var newColor = new Color(userValue);
 					if (newColor.err){
-						Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value",userValue )});
+						errorMethod(userValue);
 					} else {
 
 						// fetch original color data which contains styleClass and property name info
@@ -484,7 +496,7 @@
 
 			var previousChangedColorIndex = getChangeSetIndex(color);
 			if ( previousChangedColorIndex !== -1 ){
-				var resetButton = $('<input type="button" class="btn btn-mini btn-warning" value="reset">');
+				var resetButton = $('<input type="button" class="btn btn-mini btn-warning" value="' + translateMethod("reset") + '">');
 				colorVisualDiv.append(resetButton);
 				var previousChangedColor = colorChangeSet[previousChangedColorIndex];
 				color.assignColor(previousChangedColor);
@@ -496,6 +508,7 @@
 			}
 
 			var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
+
 
 			var renderedTemplate = $(template(color)).editable({
 
@@ -526,10 +539,6 @@
 			}
 		};
 
-		this.init = function(containerElement) {
-			this.$el = $(containerElement);
-			this.styleController.init();
-		};
 
 		this.listen = function($elements) {
 			$elements.click(function() {
@@ -544,6 +553,14 @@
 			var styleRules = this.styleController.getCSSRuleMatches(element);
 			if (styleRules.length === 0) styleRules = this.styleController.getParentMatches(element);
 			renderColorWidgets($("#sheet-colors-content"), styleRules);
+		};
+
+		this.init = function(containerElement, options) {
+			options = options || {};
+			if (options.error) errorMethod = options.error;
+			if (options.translate) translateMethod = options.translate;
+			this.$el = $(containerElement);
+			this.styleController.init();
 		};
 
 		this.styleController = new DynamicStyleController();
