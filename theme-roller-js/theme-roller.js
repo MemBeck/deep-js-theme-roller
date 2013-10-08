@@ -3,30 +3,71 @@
 	Copyright Stephan Ahlf (ahlf-it.de)
 	https://github.com/s-a/deep-js-theme-roller
 	MIT and GPL licensed.
-*/
-;(function(window, $) {
+	*/
+	;(function(window, $) {
 
+		if (!$.fn.editable){
+			$.fn.editable = function() {
+				var self = this;
+				self.events = [];
 
-	var currentElement = null;
-	var getMatchedCSSRules = function(node) {
-		var selectors = [];
-		if (!node || !node.ownerDocument) return [];
-		var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, "");
+				$(this).click(function() {
+					var colorValueString = $.trim(prompt(translateMethod("Please enter a color value"),""));
+					if (colorValueString){
+						self.events.hidden({
+							"currentTarget" : $(this),
+							"userInputValueString" : colorValueString
+						}, "save");
+					}
+				});
 
-		if (rules){
-			var i = rules.length;
-			while (i--) {
-				selectors.push(rules[i].selectorText);
-			}
+				this.option = function(key, value) {
+					if(key in this.options) {
+						this.options[key] = value;
+					}
+
+					if(key === 'value') {
+						this.setValue(value);
+					}
+				};
+
+				this.setValue = function(value ) {
+					debugger;
+					this.value = value;
+				};
+
+				this.getValue = function() {
+					return this.value;
+				};
+
+				this.on = function(eventName, eventFunction) {
+					self.events[eventName] = eventFunction;
+				};
+				return this;
+
+			};
 		}
-		return selectors;
-	};
 
-	var DynamicStyle = function(selectorText, styleName, styleValue) {
-		this.selectorText = selectorText;
-		this.styleName = styleName;
+		var currentElement = null;
+		var getMatchedCSSRules = function(node) {
+			var selectors = [];
+			if (!node || !node.ownerDocument) return [];
+			var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, "");
 
-		var matchColors = /(\d{1,3}), (\d{1,3}), (\d{1,3})/;
+			if (rules){
+				var i = rules.length;
+				while (i--) {
+					selectors.push(rules[i].selectorText);
+				}
+			}
+			return selectors;
+		};
+
+		var DynamicStyle = function(selectorText, styleName, styleValue) {
+			this.selectorText = selectorText;
+			this.styleName = styleName;
+
+			var matchColors = /(\d{1,3}), (\d{1,3}), (\d{1,3})/;
 		// var matchColorsRgba = /(\d{1,3}), (\d{1,3}), (\d{1,3}), (.*)/;
 		var matchItems = new RegExp("^rgb((.*))$");
 		//var rgbArr = [];
@@ -72,17 +113,19 @@
 		this.dynamicStyles = [];
 		this.dynamicStylesCount = 0;
 
+
+
 		this.applyCSS = function(){
 			var result = [];
 			for (var i = 0; i < colorChangeSet.length; i++) {
 				var color = colorChangeSet[i];
 				result.push(color.style.selectorText + "{");
 
-					var type = color.type.split(/(?=[A-Z])/);
-					for (var t = 0; t < type.length; t++) {
-						type[t] = type[t].toLowerCase();
-					}
-					result.push(type.join("-") + ": " + color.toString() + ";");
+				var type = color.type.split(/(?=[A-Z])/);
+				for (var t = 0; t < type.length; t++) {
+					type[t] = type[t].toLowerCase();
+				}
+				result.push(type.join("-") + ": " + color.toString() + ";");
 				result.push("}");
 			}
 			var res = result.join("\n");
@@ -91,13 +134,13 @@
 
 		this.colorWidgetItemValueChanged = function(e, reason) {
 
-				if(reason === 'save' /*|| reason === 'cancel'*/) {
-					var $e = $(e.currentTarget);
-					var userValue = $(e.currentTarget).text();
-					var newColor = new Color(userValue);
-					if (newColor.err){
-						errorMethod(userValue);
-					} else {
+			if(reason === 'save' /*|| reason === 'cancel'*/) {
+				var $e = $(e.currentTarget);
+				var userValue = e.userInputValueString || $(e.currentTarget).text();
+				var newColor = new Color(userValue);
+				if (newColor.err){
+					errorMethod(userValue);
+				} else {
 
 						// fetch original color data which contains styleClass and property name info
 						var currentColor = $e.data("color"); //new Color($(e.currentTarget).parent().css("background-color"), "background-color");
@@ -127,52 +170,52 @@
 						currentElement.click();
 					}
 				}
-		};
+			};
 
 
-		this.getStyles = function($element) {
+			this.getStyles = function($element) {
 
-			if (!$element) $element = $("body");
-			var processSelector = function(rule){
-				for (var key in rule.style){
-					var style = rule.style[key];
+				if (!$element) $element = $("body");
+				var processSelector = function(rule){
+					for (var key in rule.style){
+						var style = rule.style[key];
 
 						// {
 
-					if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
-						var colorValues = new CSSColorRow(key, style);
-						if (colorValues.count !== 0){
+							if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
+								var colorValues = new CSSColorRow(key, style);
+								if (colorValues.count !== 0){
 
 
 
-							var test = new DynamicStyle(rule.selectorText, key, style);
-							if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
-								var v = test.r + "," + test.g + "," + test.b;
-								if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
-								self.dynamicStyles[v].push(test);
-								test.sortOrder = self.dynamicStylesCount;
-								self.dynamicStylesCount++;
-							}
+									var test = new DynamicStyle(rule.selectorText, key, style);
+									if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
+										var v = test.r + "," + test.g + "," + test.b;
+										if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
+										self.dynamicStyles[v].push(test);
+										test.sortOrder = self.dynamicStylesCount;
+										self.dynamicStylesCount++;
+									}
 
-							test.val();
-						}
+									test.val();
+								}
 				//console.log(rule.selectorText, key, style);
-					}
-				}
-			};
+			}
+		}
+	};
 
-			var processCss = function(classes) {
-				if(classes){
-					for(var x=0; x < classes.length ; x++){
-						var selector = classes[x];
-						if (selector){
-							processSelector(selector);
-						}
-					}
+	var processCss = function(classes) {
+		if(classes){
+			for(var x=0; x < classes.length ; x++){
+				var selector = classes[x];
+				if (selector){
+					processSelector(selector);
 				}
-			};
+			}
+		}
+	};
 
-			var styles = document.styleSheets;
+	var styles = document.styleSheets;
 
 
 			// read css import rules
@@ -480,7 +523,7 @@
 					//"padding" : "11px"
 			}/*,
 			click: widgetItemClick*/
-			}).hide();
+		}).hide();
 		};
 
 		style.selector = $('<div/>').text(style.selectorText).html();
@@ -507,17 +550,15 @@
 				});
 			}
 
-			var template = Handlebars.compile('<a class="theme-roller-style-container">' + color.toString() + '</a>');
-
-
-			var renderedTemplate = $(template(color)).editable({
-
-			}).on('hidden', styleController.colorWidgetItemValueChanged).data("color", color).css({
-					"background-color": color.toString(),
-					"color" : color.invertGoodReadable().toString(),
-					"margin-right" : "5px"
+			var template = '<a class="theme-roller-style-container">' + color.toString() + '</a>';
+			var renderedTemplate = $(template);
+			renderedTemplate.data("color", color).css({
+				"background-color": color.toString(),
+				"color" : color.invertGoodReadable().toString(),
+				"margin-right" : "5px"
 					//"padding" : "11px"
-			});
+				});
+			if ($.fn.editable) renderedTemplate.editable().on('hidden', styleController.colorWidgetItemValueChanged);
 
 			colorVisualDiv.append(renderedTemplate);
 		}
@@ -569,17 +610,7 @@
 		return this;
 	};
 
-
-	// Otherwise expose jQuery to the global object as usual
 	window.ThemeRoller = new ThemeRoller();
-
-	// Register as a named AMD module, since jQuery can be concatenated with other
-	// files that may use define, but not via a proper concatenation script that
-	// understands anonymous AMD modules. A named AMD is safest and most robust
-	// way to register. Lowercase jquery is used because AMD module names are
-	// derived from file names, and jQuery is normally delivered in a lowercase
-	// file name. Do this after creating the global so that if an AMD module wants
-	// to call noConflict to hide this version of jQuery, it will work.
 	if ( typeof define === "function" && define.amd ) {
 		define( "themeRoller", [], function () { return new ThemeRoller(); } );
 	}
