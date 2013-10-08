@@ -601,7 +601,7 @@
 			if (options.error) errorMethod = options.error;
 			if (options.translate) translateMethod = options.translate;
 			this.$el = $(containerElement);
-			this.styleController.init();
+			if (this.styleController.dynamicStylesCount === 0) this.styleController.init();
 		};
 
 		this.styleController = new DynamicStyleController();
