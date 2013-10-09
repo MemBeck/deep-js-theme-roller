@@ -92,5 +92,10 @@
 		});
 	});
 
+	$(document).on('keypress', null, 'ctrl+y', function() {
+		ThemeRoller.refresh();
+	});
+
+
 
 })(jQuery, window.Deep);
