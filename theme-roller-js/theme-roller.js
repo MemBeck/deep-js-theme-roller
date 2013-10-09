@@ -1,73 +1,72 @@
 /*!
-	ThemeRoller JavaScript Library
-	Copyright Stephan Ahlf (ahlf-it.de)
-	https://github.com/s-a/deep-js-theme-roller
-	MIT and GPL licensed.
-	*/
-	;(function(window, $) {
+ThemeRoller JavaScript Library
+Copyright Stephan Ahlf (ahlf-it.de)
+https://github.com/s-a/deep-js-theme-roller
+MIT and GPL licensed.
+*/
+;(function(window, $) {
 
-		if (!$.fn.editable){
-			$.fn.editable = function() {
-				var self = this;
-				self.events = [];
+	if (!$.fn.editable){
+		$.fn.editable = function() {
+			var self = this;
+			self.events = [];
 
-				$(this).click(function() {
-					var colorValueString = $.trim(prompt(translateMethod("Please enter a color value"),""));
-					if (colorValueString){
-						self.events.hidden({
-							"currentTarget" : $(this),
-							"userInputValueString" : colorValueString
-						}, "save");
-					}
-				});
-
-				this.option = function(key, value) {
-					if(key in this.options) {
-						this.options[key] = value;
-					}
-
-					if(key === 'value') {
-						this.setValue(value);
-					}
-				};
-
-				this.setValue = function(value ) {
-					debugger;
-					this.value = value;
-				};
-
-				this.getValue = function() {
-					return this.value;
-				};
-
-				this.on = function(eventName, eventFunction) {
-					self.events[eventName] = eventFunction;
-				};
-				return this;
-
-			};
-		}
-
-		var currentElement = null;
-		var getMatchedCSSRules = function(node) {
-			var selectors = [];
-			if (!node || !node.ownerDocument) return [];
-			var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, "");
-
-			if (rules){
-				var i = rules.length;
-				while (i--) {
-					selectors.push(rules[i].selectorText);
+			$(this).click(function() {
+				var colorValueString = $.trim(prompt(translateMethod("Please enter a color value"),""));
+				if (colorValueString){
+					self.events.hidden({
+						"currentTarget" : $(this),
+						"userInputValueString" : colorValueString
+					}, "save");
 				}
-			}
-			return selectors;
+			});
+
+			this.option = function(key, value) {
+				if(key in this.options) {
+					this.options[key] = value;
+				}
+
+				if(key === 'value') {
+					this.setValue(value);
+				}
+			};
+
+			this.setValue = function(value ) {
+				this.value = value;
+			};
+
+			this.getValue = function() {
+				return this.value;
+			};
+
+			this.on = function(eventName, eventFunction) {
+				self.events[eventName] = eventFunction;
+			};
+			return this;
+
 		};
+	}
 
-		var DynamicStyle = function(selectorText, styleName, styleValue) {
-			this.selectorText = selectorText;
-			this.styleName = styleName;
+	var currentElement = null;
+	var getMatchedCSSRules = function(node) {
+		var selectors = [];
+		if (!node || !node.ownerDocument) return [];
+		var rules = node.ownerDocument.defaultView.getMatchedCSSRules(node, "");
 
-			var matchColors = /(\d{1,3}), (\d{1,3}), (\d{1,3})/;
+		if (rules){
+			var i = rules.length;
+			while (i--) {
+				selectors.push(rules[i].selectorText);
+			}
+		}
+		return selectors;
+	};
+
+	var DynamicStyle = function(selectorText, styleName, styleValue) {
+		this.selectorText = selectorText;
+		this.styleName = styleName;
+
+		var matchColors = /(\d{1,3}), (\d{1,3}), (\d{1,3})/;
 		// var matchColorsRgba = /(\d{1,3}), (\d{1,3}), (\d{1,3}), (.*)/;
 		var matchItems = new RegExp("^rgb((.*))$");
 		//var rgbArr = [];
@@ -76,25 +75,20 @@
 		self.styleName = styleName;
 		// try{
 
-			this.styleText = styleValue.replace(matchItems, function (match/*, content, off , s*/){
-				var test = styleValue.match(matchColors);
-				self.r = parseInt(test[1],10);
-				self.g = parseInt(test[2],10);
-				self.b = parseInt(test[3],10);
-				return styleValue.replace(match, "{0}");
-			});
+		this.styleText = styleValue.replace(matchItems, function (match/*, content, off , s*/){
+			var test = styleValue.match(matchColors);
+			self.r = parseInt(test[1],10);
+			self.g = parseInt(test[2],10);
+			self.b = parseInt(test[3],10);
+			return styleValue.replace(match, "{0}");
+		});
 		// } catch (e) {
 		// }
 
-		this.val = function(value){
-			if (value){
-				// set value list
-			} else {
-				// get value list
-			}
-		};
 
-		if (this.r !== undefined){
+
+		if (this.r === undefined){
+			debugger;
 		}
 
 		return this;
@@ -133,7 +127,6 @@
 		};
 
 		this.colorWidgetItemValueChanged = function(e, reason) {
-
 			if(reason === 'save' /*|| reason === 'cancel'*/) {
 				var $e = $(e.currentTarget);
 				var userValue = e.userInputValueString || $(e.currentTarget).text();
@@ -142,80 +135,74 @@
 					errorMethod(userValue);
 				} else {
 
-						// fetch original color data which contains styleClass and property name info
-						var currentColor = $e.data("color"); //new Color($(e.currentTarget).parent().css("background-color"), "background-color");
-						newColor = currentColor.assignColor(newColor);
-						$e.parent().parent().children().each(function() {
-							var c = $(this).find("a").data("color"); // new Color(colorStr, "background-color");
-							if (c.equal(currentColor)){
-								// apply color change!
-								$e.editable('setValue', newColor.toString());
+					// fetch original color data which contains styleClass and property name info
+					var currentColor = $e.data("color"); //new Color($(e.currentTarget).parent().css("background-color"), "background-color");
+					newColor = currentColor.assignColor(newColor);
+					$e.parent().parent().children().each(function() {
+						var c = $(this).find("a").data("color"); // new Color(colorStr, "background-color");
+						if (c.equal(currentColor)){
+							// apply color change!
+							$e.editable('setValue', newColor.toString());
 
-								$(this).css({
-									"background-color" : newColor.toString(),
-									"color" : newColor.invertGoodReadable().toString()
-								}).data("color", newColor);
+							$(this).css({
+								"background-color" : newColor.toString(),
+								"color" : newColor.invertGoodReadable().toString()
+							}).data("color", newColor);
 
-								var colorSetupIndex = getChangeSetIndex(currentColor);
-								if (colorSetupIndex === -1){
-									colorChangeSet.push(newColor);
-								} else {
-									colorChangeSet[colorSetupIndex] = newColor;
-								}
+							var colorSetupIndex = getChangeSetIndex(currentColor);
+							if (colorSetupIndex === -1){
+								colorChangeSet.push(newColor);
+							} else {
+								colorChangeSet[colorSetupIndex] = newColor;
 							}
-						});
-						self.applyCSS();
+						}
+					});
+					self.applyCSS();
 
 
-						currentElement.click();
+					currentElement.click();
+				}
+			}
+		};
+
+
+		this.getStyles = function($element) {
+
+			if (!$element) $element = $("body");
+			var processSelector = function(rule){
+				for (var key in rule.style){
+					var style = rule.style[key];
+					if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
+						var colorValues = new CSSColorRow(key, style);
+						if (colorValues.count !== 0){
+
+
+
+							var test = new DynamicStyle(rule.selectorText, key, style);
+							if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
+								var v = test.r + "," + test.g + "," + test.b;
+								if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
+								self.dynamicStyles[v].push(test);
+								test.sortOrder = self.dynamicStylesCount;
+								self.dynamicStylesCount++;
+							}
+						}
 					}
 				}
 			};
 
-
-			this.getStyles = function($element) {
-
-				if (!$element) $element = $("body");
-				var processSelector = function(rule){
-					for (var key in rule.style){
-						var style = rule.style[key];
-
-						// {
-
-							if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
-								var colorValues = new CSSColorRow(key, style);
-								if (colorValues.count !== 0){
-
-
-
-									var test = new DynamicStyle(rule.selectorText, key, style);
-									if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
-										var v = test.r + "," + test.g + "," + test.b;
-										if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
-										self.dynamicStyles[v].push(test);
-										test.sortOrder = self.dynamicStylesCount;
-										self.dynamicStylesCount++;
-									}
-
-									test.val();
-								}
-				//console.log(rule.selectorText, key, style);
-			}
-		}
-	};
-
-	var processCss = function(classes) {
-		if(classes){
-			for(var x=0; x < classes.length ; x++){
-				var selector = classes[x];
-				if (selector){
-					processSelector(selector);
+			var processCss = function(classes) {
+				if(classes){
+					for(var x=0; x < classes.length ; x++){
+						var selector = classes[x];
+						if (selector){
+							processSelector(selector);
+						}
+					}
 				}
-			}
-		}
-	};
+			};
 
-	var styles = document.styleSheets;
+			var styles = document.styleSheets;
 
 
 			// read css import rules
@@ -237,23 +224,23 @@
 
 			// read files css rules
 			if (this.dynamicStylesCount === 0)
-				for (var css = 0; css < styles.length; css++) {
-					var cssSheet = styles[css];
-					var rul = cssSheet.rules || cssSheet.cssRules;
-					if (rul)
-						processCss(rul);
-				}
-			};
+		for (var css = 0; css < styles.length; css++) {
+			var cssSheet = styles[css];
+			var rul = cssSheet.rules || cssSheet.cssRules;
+			if (rul)
+				processCss(rul);
+		}
+		};
 
-			this.init = function() {
-				this.getStyles();
-			};
+		this.init = function() {
+			this.getStyles();
+		};
 
-			this.getCSSRuleMatches = function(element) {
-				var result = [];
-				var matchedCSSRules = getMatchedCSSRules(element);
-				if (matchedCSSRules.length>0){
-					var rule ;
+		this.getCSSRuleMatches = function(element) {
+			var result = [];
+			var matchedCSSRules = getMatchedCSSRules(element);
+			if (matchedCSSRules.length>0){
+				var rule ;
 				// get all current rules matching this element
 				for (var m = 0; m < matchedCSSRules.length; m++) {
 					rule = matchedCSSRules[m];
