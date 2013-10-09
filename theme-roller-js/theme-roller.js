@@ -73,7 +73,8 @@ MIT and GPL licensed.
 		var self = this;
 		self.originalStyleText = styleValue;
 		self.styleName = styleName;
-		// try{
+
+
 
 		this.styleText = styleValue.replace(matchItems, function (match/*, content, off , s*/){
 			var test = styleValue.match(matchColors);
@@ -82,14 +83,7 @@ MIT and GPL licensed.
 			self.b = parseInt(test[3],10);
 			return styleValue.replace(match, "{0}");
 		});
-		// } catch (e) {
-		// }
 
-
-
-		if (this.r === undefined){
-			debugger;
-		}
 
 		return this;
 	};
@@ -104,7 +98,8 @@ MIT and GPL licensed.
 	style.appendTo("body");
 	var DynamicStyleController = function() {
 		var self = this;
-		this.dynamicStyles = [];
+		this.dynamicColorStyles = [];
+		this.dynamicFontStyles = [];
 		this.dynamicStylesCount = 0;
 
 
@@ -165,6 +160,9 @@ MIT and GPL licensed.
 			}
 		};
 
+		var isNumber = function(n) {
+			return !isNaN(parseFloat(n)) && isFinite(n);
+		};
 
 		this.getStyles = function($element) {
 
@@ -172,19 +170,25 @@ MIT and GPL licensed.
 			var processSelector = function(rule){
 				for (var key in rule.style){
 					var style = rule.style[key];
-					if (typeof (style) === "string" && key !== "cssText" && $.trim(style) !== ""){
+					if (typeof (style) === "string" && key !== "cssText" && $.trim(style) && !isNumber(style) ){
+
 						var colorValues = new CSSColorRow(key, style);
 						if (colorValues.count !== 0){
-
-
-
 							var test = new DynamicStyle(rule.selectorText, key, style);
 							if (test.r !== undefined /*&& foundOnPage(test.selectorText)*/){
 								var v = test.r + "," + test.g + "," + test.b;
-								if (self.dynamicStyles[v] === undefined) self.dynamicStyles[v] = [];
-								self.dynamicStyles[v].push(test);
+								if (self.dynamicColorStyles[v] === undefined) self.dynamicColorStyles[v] = [];
+								self.dynamicColorStyles[v].push(test);
 								test.sortOrder = self.dynamicStylesCount;
 								self.dynamicStylesCount++;
+							}
+						} else {
+							if (style.indexOf("font") !== -1){
+								var styleValue = rule.style[style];
+								if (styleValue !== "") {
+									var newFontItemStyle = {rule:rule, cssPropertyName: style, cssPropertyValue: styleValue};
+									self.dynamicFontStyles.push(newFontItemStyle);
+								}
 							}
 						}
 					}
@@ -223,13 +227,14 @@ MIT and GPL licensed.
 			}
 
 			// read files css rules
-			if (this.dynamicStylesCount === 0)
-		for (var css = 0; css < styles.length; css++) {
-			var cssSheet = styles[css];
-			var rul = cssSheet.rules || cssSheet.cssRules;
-			if (rul)
-				processCss(rul);
-		}
+			if (this.dynamicStylesCount === 0){
+				for (var css = 0; css < styles.length; css++) {
+					var cssSheet = styles[css];
+					var rul = cssSheet.rules || cssSheet.cssRules;
+					if (rul)
+						processCss(rul);
+				}
+			}
 		};
 
 		this.init = function() {
@@ -244,8 +249,8 @@ MIT and GPL licensed.
 				// get all current rules matching this element
 				for (var m = 0; m < matchedCSSRules.length; m++) {
 					rule = matchedCSSRules[m];
-					for (var key in this.dynamicStyles) {
-						var styles = this.dynamicStyles[key];
+					for (var key in this.dynamicColorStyles) {
+						var styles = this.dynamicColorStyles[key];
 						for (var i = 0; i < styles.length; i++) {
 							var style = styles[i];
 							if (style.selectorText === rule || style.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
@@ -258,6 +263,26 @@ MIT and GPL licensed.
 			return result;
 		};
 
+		this.getCSSFontRuleMatches = function(element) {
+			var result = [];
+			var matchedCSSRules = getMatchedCSSRules(element);
+			if (matchedCSSRules.length>0){
+				var rule ;
+				// get all current rules matching this element
+				for (var m = 0; m < matchedCSSRules.length; m++) {
+					rule = matchedCSSRules[m];
+					for (var i = 0; i < this.dynamicFontStyles.length; i++) {
+						var style = this.dynamicFontStyles[i];
+						if (style.rule.selectorText === rule || style.rule.selectorText === rule.replace(/:focus/g, "").replace(/:hover/g, "")){
+							result.push({"el":element, "style": style});
+						}
+					}
+
+				}
+			}
+			return result;
+		};
+
 		this.getParentMatches = function  (elem) {
 			if (!elem) return [];
 			var e = $(elem).parent().get(0);
@@ -265,6 +290,18 @@ MIT and GPL licensed.
 
 			if (s.length === 0) {
 				return this.getParentMatches(e);
+			} else {
+				return s;
+			}
+		};
+
+		this.getParentFontMatches = function  (elem) {
+			if (!elem) return [];
+			var e = $(elem).parent().get(0);
+			var s = this.getCSSFontRuleMatches(e);
+
+			if (s.length === 0) {
+				return this.getParentFontMatches(e);
 			} else {
 				return s;
 			}
@@ -498,7 +535,7 @@ MIT and GPL licensed.
 	};
 
 
-	var render = function(colors, $el, colorString, style, styleController) {
+	var renderColorWidget = function(colors, $el, colorString, style, styleController) {
 		var $sheetColorsContainer = $el;
 		var c = colors.toString();
 		var ColorVisualDiv = function  (c) {
@@ -508,15 +545,15 @@ MIT and GPL licensed.
 					// "background-color": style.originalStyleText,
 					// "color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
 					//"padding" : "11px"
-			}/*,
-			click: widgetItemClick*/
-		}).hide();
+				}/*,
+				click: widgetItemClick*/
+			}).hide();
 		};
 
 		style.selector = $('<div/>').text(style.selectorText).html();
 
 		var text = '<div class="theme-roller-style-container style-selector-text" title="' + style.selector + '">' + style.selectorText + "</div> <div class='theme-roller-style-container style-selector-text'><strong>" + style.styleName + "</strong> (" + style.originalStyleText + ")</div><br>";
-		colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
+		var colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
 
 		$sheetColorsContainer.append(colorVisualDiv);
 
@@ -553,7 +590,26 @@ MIT and GPL licensed.
 		colorVisualDiv.fadeIn();
 	};
 
+	var renderFontWidget = function(targetElement, fontStyle) {
 
+		var FontVisualDiv = function  (c) {
+			return $("<div/>",{
+				class : "style-selector-item",
+				css: {
+					// "background-color": style.originalStyleText,
+					// "color" : (new Color(style.originalStyleText, "?")).invertGoodReadable().toString(),
+					//"padding" : "11px"
+				}/*,
+				click: widgetItemClick*/
+			}).hide();
+		};
+		var text = '<div class="theme-roller-style-container style-selector-text" title="' + fontStyle.style.rule.selectorText + '">'  + fontStyle.style.rule.selectorText + "{" + fontStyle.style.cssPropertyName + ": " + fontStyle.style.cssPropertyValue +  "}</div><br>";
+		var fontVisualDiv = new FontVisualDiv().data("style", fontStyle).html(text);
+		$themeRollerFontsContent.append(fontVisualDiv);
+		fontVisualDiv.fadeIn();
+	};
+
+	var $themeRollerFontsContent;
 	var ThemeRoller = function() {
 
 		var self = this;
@@ -563,24 +619,40 @@ MIT and GPL licensed.
 				r.style.selectorText = r.style.selectorText;// + " - " + r.style.sortOrder; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
 
 				var colors = new CSSColorRow(r.style.styleName, r.style.originalStyleText);
-				render(colors, target, r.key, r.style, self.styleController);
+				renderColorWidget(colors, target, r.key, r.style, self.styleController);
+			}
+		};
+
+		var renderFontWidgets = function(target, styleRules) {
+			for (var i = 0; i < styleRules.length; i++) {
+				renderFontWidget(target, styleRules[i]);
 			}
 		};
 
 
 		this.listen = function($elements) {
+			$themeRollerFontsContent = $("#theme-roller-fonts-content");
 			$elements.click(function() {
-				$("#sheet-colors-content").empty();
+				$("#theme-roller-colors-content").empty();
+				$themeRollerFontsContent.empty();
 				self.lookAt(this);
 				return false;
 			});
+		};
+
+		this.refresh = function(){
+			if (currentElement) currentElement.click();
 		};
 
 		this.lookAt = function(element) {
 			currentElement = element;
 			var styleRules = this.styleController.getCSSRuleMatches(element);
 			if (styleRules.length === 0) styleRules = this.styleController.getParentMatches(element);
-			renderColorWidgets($("#sheet-colors-content"), styleRules);
+			renderColorWidgets($("#theme-roller-colors-content"), styleRules);
+
+			styleRules = this.styleController.getCSSFontRuleMatches(element);
+			if (styleRules.length === 0) styleRules = this.styleController.getParentFontMatches(element);
+			renderFontWidgets($themeRollerFontsContent, styleRules);
 		};
 
 		this.init = function(containerElement, options) {

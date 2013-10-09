@@ -5,7 +5,7 @@
 		var intro = Deep.Intro({
 			steps: [
 			{
-				element: '#sheet-colors',
+				element: '#theme-roller',
 				intro: "help__text__1",
 				position: 'left'
 			},
@@ -15,7 +15,7 @@
 				position: 'right'
 			},
 			{
-				element: '#sheet-colors-header-title',
+				element: '#theme-roller-header-title',
 				intro: "help__text__3",
 				position: 'left'
 			}
@@ -36,7 +36,7 @@
 			return false;
 		});
 
-		var $contentArea = $el.find("#sheet-colors-content");
+		var $contentArea = $el.find("#theme-roller-content");
 		$el.find("a.minimize").kick(
 			function(){
 				$(this).text(Deep.translate("Maximize")).toggleClass("active");
@@ -48,31 +48,29 @@
 				$contentArea.slideDown();
 				return false;
 			}
-			);
+		);
 
-		$el.find("a.save").click(function() {
+		$el.find("a.save, a.load, a.share, a.reset").click(function() {
 			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
 			alert("not implemented yet");
 			return false;
 		});
 
-		$el.find("a.load").click(function() {
-			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-			alert("not implemented yet");
+		$el.find("a.refresh").click(function() {
+			ThemeRoller.refresh();
 			return false;
 		});
 
-		$el.find("a.share").click(function() {
-			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-			alert("not implemented yet");
-			return false;
-		});
-
-		$el.find("a.reset").click(function() {
-			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-			alert("not implemented yet");
-			return false;
-		});
+		$el.find(".theme-roller-content-title").kick(
+			function() {
+				$(this).next().slideUp();
+				return false;
+			},
+			function() {
+				$(this).next().slideDown();
+				return false;
+			}
+		);
 	};
 
 
@@ -87,10 +85,9 @@
 		Deep.on("sa.theme-roller.index.render", function(){
 			var self = this;
 			var $el = this.$el;
-			console.log("Styles initialized", ThemeRoller.styleController.dynamicStylesCount, ThemeRoller.styleController.dynamicStyles);
 			initializeMenu($el);
 
-			var watchElements = $el.find("*:not(#sheet-colors):not(#sheet-colors *)").filter(":not(#theme-roller-help)");
+			var watchElements = $el.find("*:not(#theme-roller):not(#theme-roller *)").filter(":not(#theme-roller-help)");
 			ThemeRoller.listen(watchElements);
 		});
 	});

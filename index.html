@@ -1,10 +1,5 @@
 <style>
-  .style-selector-item:hover{
-    background-color: #333;
-    color: ghostwhite!important;
-  }
-
-  #sheet-colors{
+  #theme-roller{
     position: fixed;
     right: 0;
     top: 43px;
@@ -14,22 +9,36 @@
     background-color: white;
   }
 
+  .theme-roller-content-title {
+    cursor: pointer;
+    color: #fff;
+    background-color: #333;
+    padding: 5px;
+  }
+
   .style-selector-item{
     border-bottom: solid 1px #333;
     padding: 3px;
   }
-  #sheet-colors-header{
+
+  .style-selector-item:hover{
+    background-color: #333;
+    color: ghostwhite!important;
+  }
+
+  #theme-roller-header{
     width: 100%;
   }
 
-  #sheet-colors-content{
+  #theme-roller-colors-content, #theme-roller-fonts-content{
     overflow: auto;
     max-height: 300px;
   }
 
-  #sheet-colors-header, #sheet-colors-content{
+  #theme-roller-header, #theme-roller-colors-content, #theme-roller-fonts-content{
     padding: 6px;
   }
+
   .theme-roller-style-container{
     text-overflow: ellipsis;
     width: inherit;
@@ -54,14 +63,16 @@
       <h1>Theme Roller</h1>
       <p>
         {{_ "theme__roller__welcome"}}
+        <h5>{{_ "intro__text__a"}}</h5>
+        {{_ "intro__text__b"}}
+        <i class="alert-info">{{_ "intro__text__c"}}</i>
+
         <a id="theme-roller-help" href="help">{{_ "I Want to know more"}}.</a>
       </p>
-      <a id="theme-roller-source" class="btn btn-info" href="https://github.com/s-a/deep-js-theme-roller">Source Code</a>
+      <a id="theme-roller-source" class="btn btn-info" href="https://github.com/s-a/deep-js-theme-roller">TEST</a>
     </div>
   </div>
   <hr>
-
-
   <div class="row">
 
     <div class="span9">
@@ -3563,11 +3574,12 @@
   </div>
 </div>
 
-<div id="sheet-colors" class="span6 hidden-phone">  <!-- append me to body at runtime to make me available global -->
-  <div id="sheet-colors-header">
-    <div id="sheet-colors-header-title"class="muted" title="deep-js Theme Roller">Roller</div>
+<div id="theme-roller" class="span6 hidden-phone">  <!-- append me to body at runtime to make me available global -->
+  <div id="theme-roller-header">
+    <div id="theme-roller-header-title"class="muted" title="deep-js Theme Roller">Roller</div>
     <div class="nav-bar nar-bar-header">
       <a class="btn btn-mini minimize" href="#">{{_ "Minimize"}}</a>
+      <a class="btn btn-mini refresh" href="#">{{_ "Refresh"}}</a>
       <a class="btn btn-mini disabled load" href="#">{{_ "load"}}</a>
       <a class="btn btn-mini disabled save" href="#">{{_ "Save"}}</a>
       <a class="btn btn-mini disabled share" href="#">{{_ "Share"}}</a>
@@ -3575,14 +3587,17 @@
       <a class="btn btn-mini help" href="#">{{_ "Help"}}</a>
     </div>
   </div>
-  <div id="sheet-colors-content"> <!-- append me to body at runtime to make me available global -->
-    <h6>{{_ "Colors"}}</h6>
-    <h5>{{_ "intro__text__a"}}</h5>
-    {{_ "intro__text__b"}}
-    <i class="alert-info">{{_ "intro__text__c"}}</i>
-  </div>
-  <div id="sheet-font-content"> <!-- append me to body at runtime to make me available global -->
-    <h6>{{_ "Fonts"}}</h6>
-    <i class="alert-info">{{_ "Selected fonts"}}</i>
+  <div id="theme-roller-content">
+    <h6 class="theme-roller-content-title">{{_ "Colors"}}</h6>
+    <div id="theme-roller-colors-content">
+      <div class="label label-info">{{_ "Nothing selected! So far..."}}</div>
+    </div>
+    <small>Maybe you find this cool to get nice font inspirations. <a target="_blank" href="http://www.google.com/fonts">http://www.google.com/fonts</a></small>
+
+    <h6 class="theme-roller-content-title">{{_ "Fonts"}}</h6>
+    <div id="theme-roller-fonts-content">
+      <div class="label label-info">{{_ "Nothing selected! So far..."}}</div>
+    </div>
+    <small>Maybe you find this tool helpful to get cool color inspirations. <a target="_blank" href="http://colorschemer.com">colorschemer.com</a></small>
   </div>
 </div>
