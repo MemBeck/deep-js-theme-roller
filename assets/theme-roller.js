@@ -119,6 +119,9 @@ MIT and GPL licensed.
 			}
 			var res = result.join("\n");
 			style.html(res);
+			var bgColor = $("body").css("background-color");
+			var c = new Color(bgColor);
+			$("#theme-roller-content").css("color", c.invertGoodReadable().toString());
 		};
 
 		this.colorWidgetItemValueChanged = function(e, reason) {
@@ -323,7 +326,7 @@ MIT and GPL licensed.
 			this.g = color.g;
 			this.b = color.b;
 			this.a = color.a;
-			this.colorString = color.colorString;
+			this.colorString = color.colorString || this.colorString;
 			return this;
 		};
 
@@ -400,8 +403,8 @@ MIT and GPL licensed.
 			return hex.length == 1 ? "0" + hex : hex;
 		};
 
-		this.rgbToHex = function(r, g, b) {
-			return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+		this.hex = function() {
+			return "#" + this.componentToHex(this.r) + this.componentToHex(this.g) + this.componentToHex(this.b);
 		};
 
 
@@ -410,10 +413,35 @@ MIT and GPL licensed.
 			if (((this.r + this.b + this.g) / 3) > 128) {
 				result.initializeBy("#000000");
 			}
-
 			return result;
 		};
 
+		this.lum = function(lum) {
+			var hex = ColorLuminance(this.hex(), 0)
+			hex = ColorLuminance(hex, lum);
+			var newColor = new Color(hex);
+			this.assignColor(newColor);
+		};
+
+		var ColorLuminance= function(hex, lum) {
+
+			// validate hex string
+			hex = String(hex).replace(/[^0-9a-f]/gi, '');
+			if (hex.length < 6) {
+				hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+			}
+			lum = lum || 0;
+
+			// convert to decimal and change luminosity
+			var rgb = "#", c, i;
+			for (i = 0; i < 3; i++) {
+				c = parseInt(hex.substr(i*2,2), 16);
+				c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+				rgb += ("00"+c).substr(c.length);
+			}
+
+			return rgb;
+		}
 
 		this.toString = function() {
 			var rgbValueString = "" ;
@@ -559,33 +587,67 @@ MIT and GPL licensed.
 		var renderedElements = [];
 		for (var cc = 0; cc < colors.colors.length; cc++) {
 			var color = colors.colors[cc];
-
 			color.style = style;
 
 			var previousChangedColorIndex = getChangeSetIndex(color);
+			var lessDarkerButton = $('<input type="button" class="btn btn-mini" value="' + translateMethod("lessDarker") + '">');
+			var darkerButton = $('<input type="button" class="btn btn-mini btn-inverse" value="' + translateMethod("Darker") + '">');
+			var resetButton = $('<input type="button" class="btn btn-mini btn-warning" value="' + translateMethod("reset") + '">').hide();
+			resetButton.click(function() {
+				remove(colorChangeSet, previousChangedColorIndex);
+				styleController.applyCSS();
+				currentElement.click();
+			});
+
+			var hexValueView = $('<span class="label label-inverse">' + color.hex() + '</span>');
+
+			var lum = function(lum) {
+				var colorSetupIndex = getChangeSetIndex(color);
+
+				color.lum(lum);
+				if (colorSetupIndex !== -1) {
+					colorChangeSet[colorSetupIndex] = color;
+				} else {
+					colorChangeSet.push(color);
+				}
+				colorInputElement.editable('setValue', color.toString()).data("color",color).css({
+					"background-color": color.toString(),
+					"color" : color.invertGoodReadable().toString()
+				});
+				hexValueView.text(color.hex());
+				styleController.applyCSS();
+				resetButton.fadeIn();
+			};
+
+			darkerButton.click(function() {
+				lum(-.1)
+			});
+			lessDarkerButton.click(function() {
+				lum(.1)
+			});
 			if ( previousChangedColorIndex !== -1 ){
-				var resetButton = $('<input type="button" class="btn btn-mini btn-warning" value="' + translateMethod("reset") + '">');
-				colorVisualDiv.append(resetButton);
+
 				var previousChangedColor = colorChangeSet[previousChangedColorIndex];
 				color.assignColor(previousChangedColor);
-				resetButton.click(function() {
-					remove(colorChangeSet, previousChangedColorIndex);
-					styleController.applyCSS();
-					currentElement.click();
-				});
+				resetButton.fadeIn();
 			}
+			colorVisualDiv.append(lessDarkerButton);
+			colorVisualDiv.append(darkerButton);
 
 			var template = '<a class="theme-roller-style-container">' + color.toString() + '</a>';
-			var renderedTemplate = $(template);
-			renderedTemplate.data("color", color).css({
+			var colorInputElement = $(template);
+			colorInputElement.data("color", color).css({
 				"background-color": color.toString(),
 				"color" : color.invertGoodReadable().toString(),
 				"margin-right" : "5px"
 					//"padding" : "11px"
 				});
-			if ($.fn.editable) renderedTemplate.editable().on('hidden', styleController.colorWidgetItemValueChanged);
+			if ($.fn.editable) colorInputElement.editable().on('hidden', styleController.colorWidgetItemValueChanged);
 
-			colorVisualDiv.append(renderedTemplate);
+			colorVisualDiv.append(colorInputElement);
+			colorVisualDiv.append(hexValueView);
+			colorVisualDiv.append(resetButton);
+
 		}
 
 		colorVisualDiv.fadeIn();
@@ -615,8 +677,6 @@ MIT and GPL licensed.
 
 		var self = this;
 		var renderColorWidgets = function(target, styleRules) {
-
-				debugger;
 			styleRules = _.uniq(styleRules,function(item, key, a){
 				var style = item.style;
 				return style.selectorText+style.styleName+style.originalStyleText;
