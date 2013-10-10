@@ -644,6 +644,8 @@ MIT and GPL licensed.
 			if (currentElement) currentElement.click();
 		};
 
+
+
 		this.lookAt = function(element) {
 			currentElement = element;
 			var styleRules = this.styleController.getCSSRuleMatches(element);

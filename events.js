@@ -74,25 +74,28 @@
 	};
 
 
-	Deep.getScript("/api/sa/theme-roller/theme-roller-js/theme-roller.js", function() {
 
-		ThemeRoller.init(this.$el, {
-			"translate" : Deep.translate,
-			"error": function(userValue) {
-				Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
-			}
-		});
-		Deep.on("sa.theme-roller.index.render", function(){
+	Deep.on("sa.theme-roller.index.render", function(){
+		var themeRollerScript = this.model.get("namespacePath") + "/assets/theme-roller.js";
+		Deep.getScript(themeRollerScript, function() {
 			var self = this;
 			var $el = this.$el;
 			initializeMenu($el);
-
 			var watchElements = $el.find("*:not(#theme-roller):not(#theme-roller *)").filter(":not(#theme-roller-help)");
+			ThemeRoller.init($el, {
+				"translate" : Deep.translate,
+				"error": function(userValue) {
+					Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
+				}
+			});
 			ThemeRoller.listen(watchElements);
 		});
 	});
 
+
+
 	$(document).on('keypress', null, 'ctrl+y', function() {
+		debugger;
 		ThemeRoller.refresh();
 	});
 
