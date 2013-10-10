@@ -77,9 +77,9 @@
 
 	Deep.on("sa.theme-roller.index.render", function(){
 		var themeRollerScript = this.model.get("namespacePath") + "/assets/theme-roller.js";
+		var self = this;
+		var $el = this.$el;
 		Deep.getScript(themeRollerScript, function() {
-			var self = this;
-			var $el = this.$el;
 			initializeMenu($el);
 			var watchElements = $el.find("*:not(#theme-roller):not(#theme-roller *)").filter(":not(#theme-roller-help)");
 			ThemeRoller.init($el, {
@@ -89,15 +89,17 @@
 				}
 			});
 			ThemeRoller.listen(watchElements);
+
+			Deep.Web.UI.hotkey(self).register("space", function(event) {
+				ThemeRoller.refresh();
+				console.warn("space");
+				return false;
+			});
 		});
 	});
 
 
 
-	$(document).on('keypress', null, 'ctrl+y', function() {
-		debugger;
-		ThemeRoller.refresh();
-	});
 
 
 
