@@ -556,9 +556,10 @@ MIT and GPL licensed.
 		var colorVisualDiv = new ColorVisualDiv(colorString).data("style", style).html(text);
 
 		$sheetColorsContainer.append(colorVisualDiv);
-
+		var renderedElements = [];
 		for (var cc = 0; cc < colors.colors.length; cc++) {
 			var color = colors.colors[cc];
+
 			color.style = style;
 
 			var previousChangedColorIndex = getChangeSetIndex(color);
@@ -614,6 +615,13 @@ MIT and GPL licensed.
 
 		var self = this;
 		var renderColorWidgets = function(target, styleRules) {
+
+				debugger;
+			styleRules = _.uniq(styleRules,function(item, key, a){
+				var style = item.style;
+				return style.selectorText+style.styleName+style.originalStyleText;
+			})
+			styleRules = _.uniq(styleRules, false);
 			for (var i = 0; i < styleRules.length; i++) {
 				var r = styleRules[i];
 				r.style.selectorText = r.style.selectorText;// + " - " + r.style.sortOrder; // + (styleRules.length>0 ? " < " + styleRules[0].style.selectorText + " &#8476; " + styleRules[0].el.nodeName : "");
