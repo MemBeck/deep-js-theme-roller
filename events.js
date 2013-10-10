@@ -31,7 +31,7 @@
 	};
 
 	var initializeMenu = function($el) {
-		$el.find("#theme-roller-help, a.help").click(function() {
+		$el.find(".theme-roller-help-button, a.help").click(function() {
 			commandStartIntro();
 			return false;
 		});
@@ -81,7 +81,7 @@
 		var $el = this.$el;
 		Deep.getScript(themeRollerScript, function() {
 			initializeMenu($el);
-			var watchElements = $el.find("*:not(#theme-roller):not(#theme-roller *)").filter(":not(#theme-roller-help)");
+			var watchElements = $el.find("*:not(#theme-roller):not(#theme-roller *):not(.theme-roller-help-button)");
 			ThemeRoller.init($el, {
 				"translate" : Deep.translate,
 				"error": function(userValue) {
@@ -92,7 +92,7 @@
 
 			Deep.Web.UI.hotkey(self).register("space", function(event) {
 				ThemeRoller.refresh();
-				console.warn("space");
+				console.warn("space", this);
 				return false;
 			});
 		});
