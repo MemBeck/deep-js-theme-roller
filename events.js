@@ -75,6 +75,10 @@
 
 
 
+	Deep.on("sa.theme-roller.gallery.render", function(){
+
+	});
+
 	Deep.on("sa.theme-roller.index.render", function(){
 		var themeRollerScript = this.model.get("namespacePath") + "/assets/theme-roller.js";
 		var self = this;
