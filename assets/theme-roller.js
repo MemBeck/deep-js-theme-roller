@@ -156,9 +156,6 @@ MIT and GPL licensed.
 						}
 					});
 					self.applyCSS();
-
-
-					currentElement.click();
 				}
 			}
 		};
@@ -590,8 +587,8 @@ MIT and GPL licensed.
 			color.style = style;
 
 			var previousChangedColorIndex = getChangeSetIndex(color);
-			var lessDarkerButton = $('<input type="button" class="btn btn-mini" value="' + translateMethod("lessDarker") + '">');
-			var darkerButton = $('<input type="button" class="btn btn-mini btn-inverse" value="' + translateMethod("Darker") + '">');
+			var lessDarkerButton = $('<input type="button" class="btn btn-mini" value="' + translateMethod("brighter") + '">');
+			var darkerButton = $('<input type="button" class="btn btn-mini btn-inverse" value="' + translateMethod("darker") + '">');
 			var resetButton = $('<input type="button" class="btn btn-mini btn-warning" value="' + translateMethod("reset") + '">').hide();
 			resetButton.click(function() {
 				remove(colorChangeSet, previousChangedColorIndex);
@@ -620,10 +617,10 @@ MIT and GPL licensed.
 			};
 
 			darkerButton.click(function() {
-				lum(-.1)
+				lum(-.1); return false;
 			});
 			lessDarkerButton.click(function() {
-				lum(.1)
+				lum(.1); return false;
 			});
 			if ( previousChangedColorIndex !== -1 ){
 
@@ -698,14 +695,22 @@ MIT and GPL licensed.
 		};
 
 
-		this.listen = function($elements) {
+		var inspectElement = function(e) {
+			$("#theme-roller-colors-content").empty();
+			$themeRollerFontsContent.empty(); 
+			self.lookAt(this); 
+			return false;
+		};
+		this.$elements;
+
+		this.off = function($elements) { 
+			this.$elements.unbind("click", inspectElement);
+		}
+		
+		this.on = function() {
+		 	this.$elements = $("body *").filter(":not(#theme-roller):not(#theme-roller *)");
 			$themeRollerFontsContent = $("#theme-roller-fonts-content");
-			$elements.click(function() {
-				$("#theme-roller-colors-content").empty();
-				$themeRollerFontsContent.empty();
-				self.lookAt(this);
-				return false;
-			});
+			this.$elements.bind("click", inspectElement);
 		};
 
 		this.refresh = function(){
@@ -739,10 +744,10 @@ MIT and GPL licensed.
 		return this;
 	};
 
-	window.ThemeRoller = new ThemeRoller();
-	if ( typeof define === "function" && define.amd ) {
-		define( "themeRoller", [], function () { return new ThemeRoller(); } );
-	}
-
+		window.ThemeRoller = new ThemeRoller();
+		if ( typeof define === "function" && define.amd ) {
+			define( "themeRoller", [], function () { return new ThemeRoller(); } );
+		}
+ 
 
 })( window, jQuery );

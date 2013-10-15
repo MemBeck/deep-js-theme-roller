@@ -1,10 +1,13 @@
 [
-	{"theme__roller__welcome" : "This is the Theme Roller test-page. Below you can find any Typography or GUI element that may exists in you composition."},
+	{"theme__roller__welcome" : "This is the Theme Roller test page. Here you can find any Typography or GUI element that may exists in your current CSS composition."},
+	{"theme__roller__warning" : "The deep.js Theme Roller is intended for administrative purposes only and only available in Google Chrome or another Webkit Browser (not tested!). Your best chance to get it working in Microsoft Internet Explorer is to install the Google Chrome Frame plugin."},
+	{"theme__roller__inspiration" : "Maybe the best place to get inspired is the Deep.js Theme Gallery but we also suggest to try http://colorschemer.com to grab cool colors and take a look at all available fonts at http://www.google.com/fonts."},
+	{"theme__roller__get__source" : "The Theme Roller is a part of the Deep.js Theme Roller package but also a single extracted JavaScript file called theme-roller.js and depends on jQuery. It is equiped with some event handlers and a visual GUI widget declared with some custom CSS in https://github.com/s-a/deep-js-theme-roller/blob/master/index.html (#theme-roller)."},
 	{"help__text__1" : "This is the Theme Roller Control. Here you can view CSS rules and edit their colors. To edit colors just click anywhere on the page on an element you want to change..."},
 	{"help__text__2" : "Yes! Maybe this one... You may noticed that the Theme Roller Control has identified different color settings for this <code>button</code>. OK... Ready? Then let us change some colors now."},
 	{"help__text__3" : "The next step is very easy. Click on a color information you want to change and enter a color in hexadecimal or RGB format.<br>Well... It should be very easy now to creaty realy cool and fresh themes."},
-	{"intro__text__a" : "Please select an element anywhere on the page."},
-	{"intro__text__b" : "I will find the CSS rules regarding to the clicked element if there are color informations available."},
-	{"intro__text__c" : "You may also try to click the 'Help' button to get more informations about how this works."},
+	{"intro__text__a" : "Once activated the Theme Roller is global available within the web app. You simply have to select an element anywhere on the page when the Theme Roller is active. It will find the CSS rules regarding to the clicked element if there are color informations available. After that you can edit the matched colors and the Theme Roller will change your browsers CSS rules without a page refresh. To navigate within the app you have to deactivate the Theme Roller Widget [ESC] or enter a hashtag URL direct into your browsers address bar."},
+	{"intro__text__b" : "Some elements have more CSS rules available than just the clicked state. To inspect those hover or active rules just activate or put the mouse cursor over the element and press [SPACE] to refresh the Theme Roller content."},
+	{"intro__text__c" : "Please keep in mind that the inspected element is always locked to the last clicked element."},
 	{"invalid__color__value" : "I could not identify '{0}' as a color value. Please enter a color in hexadecimal. <br>For example: '[#B88A00] or [B88A00]' or as RGB '[184,138,0] or [rgb(184,138,0)]'."}
 ]

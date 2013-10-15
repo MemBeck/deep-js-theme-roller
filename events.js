@@ -39,13 +39,15 @@
 		var $contentArea = $el.find("#theme-roller-content");
 		$el.find("a.minimize").kick(
 			function(){
-				$(this).text(Deep.translate("Maximize")).toggleClass("active");
+				$(this).text(Deep.translate("Activate")).toggleClass("active").nextAll("a").fadeOut();
 				$contentArea.slideUp();
+				ThemeRoller.off();
 				return false;
 			},
 			function(){
-				$(this).text(Deep.translate("Minimize")).toggleClass("active");
+				$(this).text(Deep.translate("Deactivate")).toggleClass("active").nextAll("a").fadeIn();
 				$contentArea.slideDown();
+				ThemeRoller.on();
 				return false;
 			}
 		);
@@ -79,32 +81,46 @@
 
 	});
 
-	Deep.on("sa.theme-roller.index.render", function(){
-		var themeRollerScript = this.model.get("namespacePath") + "/assets/theme-roller.js";
-		var self = this;
-		var $el = this.$el;
-		Deep.getScript(themeRollerScript, function() {
-			initializeMenu($el);
-			var watchElements = $el.find("*:not(#theme-roller):not(#theme-roller *):not(.theme-roller-help-button)");
-			ThemeRoller.init($el, {
-				"translate" : Deep.translate,
-				"error": function(userValue) {
-					Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
-				}
-			});
-			ThemeRoller.listen(watchElements);
+	Deep.on("sa.theme-roller.index.unload", function(){
 
-			Deep.Web.UI.hotkey(self).register("space", function(event) {
-				ThemeRoller.refresh();
-				console.warn("space", this);
-				return false;
-			});
-		});
 	});
 
+	Deep.on("sa.theme-roller.index.render", function(){
+		var themeRollerScript = this.model.get("namespacePath") + "/assets/theme-roller.js";
+
+		initializeMenu(this.$el);
+
+
+		if ($("#theme-roller").length === 0){
+			Deep.getScript(themeRollerScript, function() {
+				ThemeRoller.init(this.$el, {
+					"translate" : Deep.translate,
+					"error": function(userValue) {
+						Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
+					}
+				});
+				ThemeRoller.on();
+				$(".theme-roller-template:first").attr("id", "theme-roller").appendTo("body");
+				$("#theme-roller").fadeIn("slow");
+			});
+		} else {
+			$(".theme-roller-template:first").remove();
+		}
 
 
 
 
+		Deep.Web.UI.hotkeys(this).on("space", true, function(event) {
+			ThemeRoller.refresh();
+			console.warn("space", this);
+			return false;
+		});
+
+		Deep.Web.UI.hotkeys(this).on("esc", true, function(event) {
+			$("body").find("a.minimize:first").click();
+			console.warn("esc", this);
+			return false;
+		});
+	});
 
 })(jQuery, window.Deep);
