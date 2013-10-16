@@ -99,9 +99,9 @@
 						Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
 					}
 				});
-				ThemeRoller.on();
 				$(".theme-roller-template:first").attr("id", "theme-roller").appendTo("body");
 				$("#theme-roller").fadeIn("slow");
+				ThemeRoller.on();
 			});
 		} else {
 			$(".theme-roller-template:first").remove();

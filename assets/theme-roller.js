@@ -6,46 +6,7 @@ MIT and GPL licensed.
 */
 ;(function(window, $) {
 
-	if (!$.fn.editable){
-		$.fn.editable = function() {
-			var self = this;
-			self.events = [];
 
-			$(this).click(function() {
-				var colorValueString = $.trim(prompt(translateMethod("Please enter a color value"),""));
-				if (colorValueString){
-					self.events.hidden({
-						"currentTarget" : $(this),
-						"userInputValueString" : colorValueString
-					}, "save");
-				}
-			});
-
-			this.option = function(key, value) {
-				if(key in this.options) {
-					this.options[key] = value;
-				}
-
-				if(key === 'value') {
-					this.setValue(value);
-				}
-			};
-
-			this.setValue = function(value ) {
-				this.value = value;
-			};
-
-			this.getValue = function() {
-				return this.value;
-			};
-
-			this.on = function(eventName, eventFunction) {
-				self.events[eventName] = eventFunction;
-			};
-			return this;
-
-		};
-	}
 
 	var currentElement = null;
 	var getMatchedCSSRules = function(node) {
@@ -125,39 +86,30 @@ MIT and GPL licensed.
 		};
 
 		this.colorWidgetItemValueChanged = function(e, reason) {
-			if(reason === 'save' /*|| reason === 'cancel'*/) {
-				var $e = $(e.currentTarget);
-				var userValue = e.userInputValueString || $(e.currentTarget).text();
-				var newColor = new Color(userValue);
-				if (newColor.err){
-					errorMethod(userValue);
+			var newColor = new Color(this.value);
+			if (newColor.err){
+				errorMethod(this.value);
+				return false;
+			} else {
+
+				// fetch original color data which contains styleClass and property name info
+				var currentColor = this.$el.data("color"); //new Color($(e.currentTarget).parent().css("background-color"), "background-color");
+				newColor = currentColor.assignColor(newColor);
+				this.$el.css({
+					"background-color" : newColor.toString(),
+					"color" : newColor.invertGoodReadable().toString()
+				}).data("color", newColor);
+
+				var colorSetupIndex = getChangeSetIndex(currentColor);
+				if (colorSetupIndex === -1){
+					colorChangeSet.push(newColor);
 				} else {
-
-					// fetch original color data which contains styleClass and property name info
-					var currentColor = $e.data("color"); //new Color($(e.currentTarget).parent().css("background-color"), "background-color");
-					newColor = currentColor.assignColor(newColor);
-					$e.parent().parent().children().each(function() {
-						var c = $(this).find("a").data("color"); // new Color(colorStr, "background-color");
-						if (c.equal(currentColor)){
-							// apply color change!
-							$e.editable('setValue', newColor.toString());
-
-							$(this).css({
-								"background-color" : newColor.toString(),
-								"color" : newColor.invertGoodReadable().toString()
-							}).data("color", newColor);
-
-							var colorSetupIndex = getChangeSetIndex(currentColor);
-							if (colorSetupIndex === -1){
-								colorChangeSet.push(newColor);
-							} else {
-								colorChangeSet[colorSetupIndex] = newColor;
-							}
-						}
-					});
-					self.applyCSS();
+					colorChangeSet[colorSetupIndex] = newColor;
 				}
-			}
+				self.applyCSS();
+				this.$el.nextAll(".btn-warning:first").fadeIn();
+				return true;
+			} 
 		};
 
 		var isNumber = function(n) {
@@ -607,7 +559,7 @@ MIT and GPL licensed.
 				} else {
 					colorChangeSet.push(color);
 				}
-				colorInputElement.editable('setValue', color.toString()).data("color",color).css({
+				colorInputElement.userInput('setValue', color.toString()).data("color",color).css({
 					"background-color": color.toString(),
 					"color" : color.invertGoodReadable().toString()
 				});
@@ -638,8 +590,14 @@ MIT and GPL licensed.
 				"color" : color.invertGoodReadable().toString(),
 				"margin-right" : "5px"
 					//"padding" : "11px"
-				});
-			if ($.fn.editable) colorInputElement.editable().on('hidden', styleController.colorWidgetItemValueChanged);
+			});
+
+			colorInputElement.userInput({
+				on : {
+					change : styleController.colorWidgetItemValueChanged
+				},
+				msg : translateMethod("Please enter a color value")
+			});
 
 			colorVisualDiv.append(colorInputElement);
 			colorVisualDiv.append(hexValueView);
@@ -708,7 +666,7 @@ MIT and GPL licensed.
 		}
 		
 		this.on = function() {
-		 	this.$elements = $("body *").filter(":not(#theme-roller):not(#theme-roller *)");
+		 	this.$elements = $("body *[class]:not(#theme-roller, #theme-roller *)");
 			$themeRollerFontsContent = $("#theme-roller-fonts-content");
 			this.$elements.bind("click", inspectElement);
 		};
