@@ -30,6 +30,10 @@
 		}).start();
 	};
 
+	var screenShot = null;
+
+	var $minimizeButton = null;
+
 	var initializeMenu = function($el) {
 		$el.find(".theme-roller-help-button, a.help").click(function() {
 			commandStartIntro();
@@ -37,7 +41,7 @@
 		});
 
 		var $contentArea = $el.find("#theme-roller-content");
-		$el.find("a.minimize").kick(
+		$minimizeButton = $el.find("a.minimize").kick(
 			function(){
 				$(this).text(Deep.translate("Activate")).toggleClass("active").nextAll("a").fadeOut();
 				$contentArea.slideUp();
@@ -50,16 +54,23 @@
 				ThemeRoller.on();
 				return false;
 			}
-		);
-
-		$el.find("a.save, a.load, a.share, a.reset").click(function() {
-			if ($(this).hasClass("disabled") || $(this).attr("disabled") === "disabled") return false;
-			alert("not implemented yet");
-			return false;
-		});
+		); 
 
 		$el.find("a.refresh").click(function() {
 			ThemeRoller.refresh();
+			return false;
+		});
+
+		$el.find("a.save").click(function() {
+			window.location.hash = "#theme-roller";
+			html2canvas($("#theme-roller-theme-elements").get(0), {
+			    onrendered: function(canvas) {
+			        screenShot = canvas;
+		            window.location.hash = "#theme-roller/save";
+					$minimizeButton.kick(0);
+			    }
+			});
+
 			return false;
 		});
 
@@ -78,11 +89,15 @@
 
 
 	Deep.on("sa.theme-roller.gallery.render", function(){
-
 	});
 
 	Deep.on("sa.theme-roller.index.unload", function(){
+	});
 
+	Deep.on("sa.theme-roller.save.render", function(){
+		//$(screenShot).width("40%");
+		$("#theme-roller-preview-image").html("").append(screenShot);
+		$("#image-preview-data").val( screenShot.toDataURL() );
 	});
 
 	Deep.on("sa.theme-roller.index.render", function(){
@@ -92,17 +107,20 @@
 
 
 		if ($("#theme-roller").length === 0){
-			Deep.getScript(themeRollerScript, function() {
-				ThemeRoller.init(this.$el, {
-					"translate" : Deep.translate,
-					"error": function(userValue) {
-						Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
-					}
-				});
 				$(".theme-roller-template:first").attr("id", "theme-roller").appendTo("body");
-				$("#theme-roller").fadeIn("slow");
-				ThemeRoller.on();
-			});
+				$("#theme-roller").hide().removeClass("hidden").fadeIn("slow", function() {
+					Deep.getScript(themeRollerScript, function() {
+						window.setTimeout(function() {						
+							ThemeRoller.init(this.$el, {
+								"translate" : Deep.translate,
+								"error": function(userValue) {
+									Deep.Web.UI.msg({type: "error", msg: Deep.translate("invalid__color__value", userValue )});
+								}
+							});
+							ThemeRoller.on();
+						},1000)
+					});
+				});
 		} else {
 			$(".theme-roller-template:first").remove();
 		}

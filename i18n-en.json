@@ -1,7 +1,7 @@
 [
-	{"theme__roller__welcome" : "This is the Theme Roller test page. Here you can find any Typography or GUI element that may exists in your current CSS composition."},
-	{"theme__roller__warning" : "The deep.js Theme Roller is intended for administrative purposes only and only available in Google Chrome or another Webkit Browser (not tested!). Your best chance to get it working in Microsoft Internet Explorer is to install the Google Chrome Frame plugin."},
-	{"theme__roller__inspiration" : "Maybe the best place to get inspired is the Deep.js Theme Gallery but we also suggest to try http://colorschemer.com to grab cool colors and take a look at all available fonts at http://www.google.com/fonts."},
+	{"theme__roller__welcome" : ""},
+	{"theme__roller__warning" : ""},
+	{"theme__roller__inspiration" : ""},
 	{"theme__roller__get__source" : "The Theme Roller is a part of the Deep.js Theme Roller package but also a single extracted JavaScript file called theme-roller.js and depends on jQuery. It is equiped with some event handlers and a visual GUI widget declared with some custom CSS in https://github.com/s-a/deep-js-theme-roller/blob/master/index.html (#theme-roller)."},
 	{"help__text__1" : "This is the Theme Roller Control. Here you can view CSS rules and edit their colors. To edit colors just click anywhere on the page on an element you want to change..."},
 	{"help__text__2" : "Yes! Maybe this one... You may noticed that the Theme Roller Control has identified different color settings for this <code>button</code>. OK... Ready? Then let us change some colors now."},

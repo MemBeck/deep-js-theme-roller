@@ -539,9 +539,9 @@ MIT and GPL licensed.
 			color.style = style;
 
 			var previousChangedColorIndex = getChangeSetIndex(color);
-			var lessDarkerButton = $('<input type="button" class="btn btn-mini" value="' + translateMethod("brighter") + '">');
-			var darkerButton = $('<input type="button" class="btn btn-mini btn-inverse" value="' + translateMethod("darker") + '">');
-			var resetButton = $('<input type="button" class="btn btn-mini btn-warning" value="' + translateMethod("reset") + '">').hide();
+			var lessDarkerButton = $('<input type="button" class="btn btn-xs btn-default" value="' + translateMethod("brighter") + '">');
+			var darkerButton = $('<input type="button" class="btn btn btn-xs btn-primary" value="' + translateMethod("darker") + '">');
+			var resetButton = $('<input type="button" class="btn btn-xs btn-warning" value="' + translateMethod("reset") + '">').hide();
 			resetButton.click(function() {
 				remove(colorChangeSet, previousChangedColorIndex);
 				styleController.applyCSS();
