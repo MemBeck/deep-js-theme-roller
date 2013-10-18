@@ -24,15 +24,23 @@
 			return false;
 		});
 
+		$el.find("a.share").click(function() {
+			$minimizeButton.kick(0);
+		});
+
 		$el.find("a.save").click(function() {
+			$("load-icon").show();
+			Deep.Web.UI.msg({"type": "info", msg: "Please wait for a moment. I want to make a screenhot of your theme."});
+			$minimizeButton.kick(0);
 			window.location.hash = "#theme-roller";
-			html2canvas($("#theme-roller-theme-elements").get(0), {
-			    onrendered: function(canvas) {
-			        screenShot = canvas;
-		            window.location.hash = "#theme-roller/save";
-					$minimizeButton.kick(0);
-			    }
-			});
+			window.setTimeout(function() {
+				html2canvas($("#theme-roller-theme-elements").get(0), {
+				    onrendered: function(canvas) {
+				        screenShot = canvas;
+			            window.location.hash = "#theme-roller/save";
+				    }
+				});
+			},2000);
 
 			return false;
 		});
@@ -80,7 +88,6 @@
  
 		ThemeRoller.init(package.$el, {
 			"done": function() {
-				$("#theme-roller-color-table,#theme-roller-theme-elements").hide().removeClass("hidden").fadeIn("fast");
 			},
 			"translate" : Deep.translate,
 			"error": function(userValue) {
@@ -95,25 +102,30 @@
 			}
 		});
 		initializeHotKeys(package);
+		
 		ThemeRoller.on();
+		$minimizeButton.kick(0);
 	};
 
 	Deep.on("sa.theme-roller.index.render", function(){
 		initializeThemeRollerTemplate(this);
+		$("#theme-roller-color-table,#theme-roller-theme-elements").hide().removeClass("hidden").fadeIn("slow");
+		document.title = "Theme Labs";
 	});
 
 	Deep.on("sa.theme-roller.save.render", function(){
 		//$(screenShot).width("40%");
 		$("#theme-roller-preview-image").html("").append(screenShot);
 		$("#image-preview-data").val( screenShot.toDataURL() );
+		document.title = "ThemeRoller - " + Deep.translate("Save");
 	});
 
 	Deep.on("sa.theme-roller.save.submit", function(result) {
-		if (!result.err) changedReminder.off();
+		if (!result.err && changedReminder) changedReminder.off();
 	});
 
-	Deep.on("sa.theme-roller.gallery.render", function(){
-
+	Deep.on("sa.theme-roller.share.render", function(){
+		document.title = Deep.translate("Share {0} now!", this.model.get("parms").p0);
 	});
 
 	Deep.on("sa.theme-roller.index.unload", function(){
