@@ -53,6 +53,8 @@ MIT and GPL licensed.
 	var errorMethod = function (userValue) {
 		alert("invalid__color__value: " + userValue);
 	};
+	var changedEvent = function() {};
+	var doneEvent = function() {};
 	var translateMethod = function (v) {
 		return v;
 	};
@@ -83,6 +85,7 @@ MIT and GPL licensed.
 			var bgColor = $("body").css("background-color");
 			var c = new Color(bgColor);
 			$("#theme-roller-content").css("color", c.invertGoodReadable().toString());
+			changedEvent();
 		};
 
 		this.colorWidgetItemValueChanged = function(e, reason) {
@@ -109,7 +112,7 @@ MIT and GPL licensed.
 				self.applyCSS();
 				this.$el.nextAll(".btn-warning:first").fadeIn();
 				return true;
-			} 
+			}
 		};
 
 		var isNumber = function(n) {
@@ -655,16 +658,16 @@ MIT and GPL licensed.
 
 		var inspectElement = function(e) {
 			$("#theme-roller-colors-content").empty();
-			$themeRollerFontsContent.empty(); 
-			self.lookAt(this); 
+			$themeRollerFontsContent.empty();
+			self.lookAt(this);
 			return false;
 		};
 		this.$elements;
 
-		this.off = function($elements) { 
+		this.off = function($elements) {
 			this.$elements.unbind("click", inspectElement);
 		}
-		
+
 		this.on = function() {
 		 	this.$elements = $("body *[class]:not(#theme-roller, #theme-roller *)");
 			$themeRollerFontsContent = $("#theme-roller-fonts-content");
@@ -691,14 +694,16 @@ MIT and GPL licensed.
 		this.init = function(containerElement, options) {
 			options = options || {};
 			if (options.error) errorMethod = options.error;
+			if (options.change) changedEvent = options.change;
+			if (options.done) doneEvent = options.done;
 			if (options.translate) translateMethod = options.translate;
 			this.$el = $(containerElement);
 			if (this.styleController.dynamicStylesCount === 0) this.styleController.init();
+			doneEvent();
 		};
 
 		this.styleController = new DynamicStyleController();
 		this.styleController.init();
-
 		return this;
 	};
 
@@ -706,6 +711,6 @@ MIT and GPL licensed.
 		if ( typeof define === "function" && define.amd ) {
 			define( "themeRoller", [], function () { return new ThemeRoller(); } );
 		}
- 
+
 
 })( window, jQuery );
