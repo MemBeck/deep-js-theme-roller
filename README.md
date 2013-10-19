@@ -1,5 +1,5 @@
-Deep-js Theme Roller
-====================
+Deep-js Theme Labs
+==================
 
 ##About
 This is a package used by [deep-js](https://github.com/s-a/deep-js)
@@ -7,7 +7,7 @@ On [the Theme Roller test page](http://app.deep-js.com/#theme-roller) you can fi
 The deep.js Theme Roller is intended for administrative purposes only and only available in Google Chrome or another Webkit Browser (not tested!). Your best chance to get it working in Microsoft Internet Explorer is to install the [Google Chrome Frame plugin](http://www.google.com/chromeframe?prefersystemlevel=true‎).
 
 ##How to use it?
-Once activated the Theme Roller is global available within the web app. You simply have to select an element anywhere on the page when the Theme Roller is active. It will find the CSS rules regarding to the clicked element if there are color informations available. After that you can edit the matched colors and the Theme Roller will change your browsers CSS rules without a page refresh. To navigate within the app you have to deactivate the Theme Roller Widget [ESC] or enter a hashtag URL direct into your browsers address bar.
+Once activated the Theme Roller is global available within the web app. You simply have to select an element anywhere on the page when the Theme Roller is active. It will find the CSS rules regarding to the clicked element if there are color informations available. After that you can edit the matched colors and the Theme Roller will change your browsers CSS rules without a page refresh. To navigate within the app you have to deactivate the Theme Roller Widget [ESC] or enter a hashtag URL direct into your browsers address bar. As always it is also possible to use the your browsers history.
 ***Some elements have more CSS rules available than just the clicked state. To inspect those hover or active rules just activate or put the mouse cursor over the element and press [SPACE] to refresh the Theme Roller content.  
 Please keep in mind that the inspected element is always locked to the last clicked element.***
 

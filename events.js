@@ -31,13 +31,14 @@
 		$el.find("a.save").click(function() {
 			$("load-icon").show();
 			Deep.Web.UI.msg({"type": "info", msg: "Please wait for a moment. I want to make a screenhot of your theme."});
-			$minimizeButton.kick(0);
-			window.location.hash = "#theme-roller";
+			window.location.hash = "#theme-roller/labs";
 			window.setTimeout(function() {
-				html2canvas($("#theme-roller-theme-elements").get(0), {
+				var demoElements = $("#theme-roller-theme-elements").css("background-color", $("body").css("background-color"));
+				html2canvas(demoElements.get(0), {
 				    onrendered: function(canvas) {
 				        screenShot = canvas;
 			            window.location.hash = "#theme-roller/save";
+						$minimizeButton.kick(0);
 				    }
 				});
 			},2000);
@@ -107,29 +108,39 @@
 		$minimizeButton.kick(0);
 	};
 
-	Deep.on("sa.theme-roller.index.render", function(){
+	Deep.on("sa.theme-roller.labs.render", function(){
 		initializeThemeRollerTemplate(this);
 		$("#theme-roller-color-table,#theme-roller-theme-elements").hide().removeClass("hidden").fadeIn("slow");
-		document.title = "Theme Labs";
+		Deep.title("Theme Labs");
 	});
 
 	Deep.on("sa.theme-roller.save.render", function(){
 		//$(screenShot).width("40%");
 		$("#theme-roller-preview-image").html("").append(screenShot);
 		$("#image-preview-data").val( screenShot.toDataURL() );
-		document.title = "ThemeRoller - " + Deep.translate("Save");
+		Deep.title(Deep.translate("Save Theme"));
 	});
 
 	Deep.on("sa.theme-roller.save.submit", function(result) {
 		if (!result.err && changedReminder) changedReminder.off();
 	});
 
-	Deep.on("sa.theme-roller.share.render", function(){
-		document.title = Deep.translate("Share {0} now!", this.model.get("parms").p0);
+	Deep.on("sa.theme-roller.gallery-search.beforesubmit", function() {
+		var galleryModel = Deep.Web.UI.models["sa.theme-roller.gallery-items"];
+		var postParms = {
+			q: $("#gallery-search-query").val()
+		};
+		galleryModel.fetch(
+			{data : $.param(postParms)}
+		);
 	});
 
-	Deep.on("sa.theme-roller.index.unload", function(){
+	Deep.on("sa.theme-roller.share.render", function(){
+		Deep.title(Deep.translate("Share {0} now!", this.model.get("parms").p0));
+	});
 
+	Deep.on("sa.theme-roller.index.render", function(){
+		Deep.title("Theme Gallery");
 	});
 
 })(window.jQuery, window.Deep);

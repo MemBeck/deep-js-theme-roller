@@ -9,25 +9,37 @@
 
 	class request {
 
+
 		private function get_images_from_media_library() {
-		  $args = array(
-		    'post_type' => 'attachment',
-		    'post_mime_type' =>'image',
-		    'post_status' => 'inherit',
-		    'order'    => 'DESC'
-		  );
-		  $query_images = new WP_Query( $args );
-		  $result =array();
-		  foreach ($query_images->posts as $image) {
-		  	$image->user = get_user_meta((int) $image->post_author);
-		  	$result[] = $image;
-		  }
-		  return $result;
+			global $post;
+	  		$args = array(
+				'post_type' => 'attachment',
+				'numberposts' => -1,
+				'orderly' => 'menu_order',
+				'post_mime_type' => 'image',
+				'meta_key' => 'theme',
+    			'meta_value' => '1'
+		  	);
+			$query = Deep::getParm("q", true);
+			if ($query !== null && trim($query) !== "") $args["s"] = trim($query);
+
+			$query_images = get_children( $args );
+			$result = array();
+
+			foreach ($query_images as $image){
+				$user = get_user_meta((int) $image->post_author);
+				$image->user = $user["nickname"];
+				$thumb = wp_get_attachment_image_src( $image->ID, 'thumbnail_size' );
+				$image->thumbnailUrl = $thumb['0'];
+				$result[] = $image;
+			}
+			return $result;
 		}
 
   	    public function process() {
 			Deep::$result->err = false;
-			Deep::$result->images = $this->get_images_from_media_library();
+			$imageList = $this->get_images_from_media_library();
+			Deep::$result->images = $imageList;
   		}
 	};
 

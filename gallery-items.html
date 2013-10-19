@@ -1,10 +1,30 @@
 {{#each images}}
-<div class="col-md-3 theme-roller-gallery-item">
+<div class="col-xs-6 col-sm-4 col-md-4 theme-roller-gallery-item">
 
-    <img class="img-thumbnail" style="" src="http://placehold.it/40x182">
-    	{{post_title}}
-		&ldquo;<span>{{guid}}</span>&rdquo; <strong>{{user.nickname}}</strong> &raquo; <i>({{post_modified_gmt}})</i>
-
-
+		<div class="row">
+			<div class="col-xs-12 col-sm-12 col-md-12">
+				<h4>&ldquo;{{post_title}}&rdquo;<h4>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-4 col-sm-4 col-md-4">
+		    	<img class="img-thumbnail" src="{{thumbnailUrl}}">
+			</div>
+			<div class="col-xs-8 col-sm-8 col-md-8 text-left">
+				<div>
+					by <strong>{{user}}</strong> Updated at: 
+				</div>
+				<div>{{date_format post_modified_gmt "f"}}</div> 
+				<hr>
+				<a class="btn btn-default" href="">Test</a>
+				<a class="btn btn-info" href="#theme-roller/share/{{post_name}}:/{{post_title}}:">Share</a>
+				<a class="btn btn-warning" href="">Use this as my theme</a>
+				<a class="btn btn-warning" href="">Use this as system theme</a>
+			</div>
+		</div>
+</div>
+{{else}}
+<div class="col-xs-6 col-sm-4 col-md-4 theme-roller-gallery-item">
+	<i>DOH! Nothing found. Please try another search term.</i>
 </div>
 {{/each}}
