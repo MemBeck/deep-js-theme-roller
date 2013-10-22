@@ -125,14 +125,21 @@
 		if (!result.err && changedReminder) changedReminder.off();
 	});
 
-	Deep.on("sa.theme-roller.gallery-search.beforesubmit", function() {
-		var galleryModel = Deep.Web.UI.models["sa.theme-roller.gallery-items"];
-		var postParms = {
-			q: $("#gallery-search-query").val()
+	Deep.Storage = function(namespacePath) {
+		var model = Deep.Web.UI.models[namespacePath];
+		this.model = model;
+		this.fetch = function(postParms) {
+			model.fetch(
+				{data : $.param(postParms)}
+			);
 		};
-		galleryModel.fetch(
-			{data : $.param(postParms)}
-		);
+
+		return this;
+	};
+
+	Deep.on("sa.theme-roller.gallery-search.beforesubmit", function(data) {
+		debugger;
+		Deep.Storage("sa.theme-roller.gallery-items").fetch({q: $("#gallery-search-query").val()});
 	});
 
 	Deep.on("sa.theme-roller.share.render", function(){

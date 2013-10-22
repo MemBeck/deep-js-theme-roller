@@ -196,6 +196,18 @@ MIT and GPL licensed.
 			this.getStyles();
 		};
 
+		var isRelevant = function(result) {
+			if (result.length === 0) return false; 
+			for (var i = 0; i < result.length; i++) {
+				var res = result[i];
+				var name = res.style.styleName;
+				if (name === "backgroundColor" || name === "color") {
+					return true;
+				}
+			}
+			return false;
+		};
+
 		this.getCSSRuleMatches = function(element) {
 			var result = [];
 			var matchedCSSRules = getMatchedCSSRules(element);
@@ -215,7 +227,12 @@ MIT and GPL licensed.
 					}
 				}
 			}
-			return result;
+
+			if (isRelevant(result)){ 
+				return result;
+			} else {
+				return [];
+			}
 		};
 
 		this.getCSSFontRuleMatches = function(element) {
