@@ -3,7 +3,9 @@ Deep-js Theme Labs
 
 ##About
 This is a package used by [deep-js](https://github.com/s-a/deep-js)
-On [the Theme Roller test page](http://app.deep-js.com/#theme-roller) you can find any Typography or GUI element that may exists in your current CSS composition.
+On [the Theme Roller test page](http://app.deep-js.com/#themes/labs) you can find any typography or GUI elements that may exists in your current CSS composition.
+
+###Important
 The deep.js Theme Roller is intended for administrative purposes only and only available in Google Chrome or another Webkit Browser (not tested!). Your best chance to get it working in Microsoft Internet Explorer is to install the [Google Chrome Frame plugin](http://www.google.com/chromeframe?prefersystemlevel=true‎).
 
 ##How to use it?
@@ -12,7 +14,7 @@ Once activated the Theme Roller is global available within the web app. You simp
 Please keep in mind that the inspected element is always locked to the last clicked element.***
 
 ##How to get inspired?
-Maybe the best place to get inspired is the [Deep.js Theme Gallery](#theme-roller/gallery) but we also suggest to try [http://colorschemer.com](http://colorschemer.com) to grab cool colors and take a look at all available fonts at [http://www.google.com/fonts](http://www.google.com/fonts).
+Maybe the best place to get inspired is the [Deep.js Theme Gallery](#themes) but we also suggest to try [http://colorschemer.com](http://colorschemer.com) to grab cool colors and take a look at all available fonts at [http://www.google.com/fonts](http://www.google.com/fonts).
 
 ###How to get the source code and use it on my own page?          
 The Theme Roller is a part of the Deep.js Theme Roller package but also a single extracted JavaScript file called theme-roller.js and depends on jQuery. It is equiped with some event handlers and a visual GUI widget declared with some custom CSS in https://github.com/s-a/deep-js-theme-roller/blob/master/index.html (#theme-roller).  

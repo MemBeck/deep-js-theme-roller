@@ -1,5 +1,28 @@
-{{#each images}}
-<div class="col-xs-6 col-sm-4 col-md-4 theme-roller-gallery-item">
+<style type="text/css">
+	.theme{
+		cursor: pointer;
+	} 
+
+	.play{
+		width: 50%;
+		background-image: url('/api/sa/theme-roller/assets/image/media-playback-start.png');
+		height: 100%;
+		background-size: 100%;
+		background-repeat: no-repeat;
+		display: inline;
+		position: absolute; 
+	}
+
+	.showme{ 
+		display: none;
+	}
+ 
+	.showhim:hover .showme{
+		display : inline;	
+	} 
+</style>
+ {{#each images}}
+<div class="col-xs-12 col-sm-4 col-md-4 col-md-4 theme-roller-gallery-item">
 
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12">
@@ -7,8 +30,11 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-xs-4 col-sm-4 col-md-4">
-		    	<img class="img-thumbnail" src="{{thumbnailUrl}}">
+			<div class="col-xs-4 col-sm-4 col-md-4 showhim">
+				<a href="#theme-roller/labs">
+			    	<div class="play showme"></div>
+			    	<img class="theme img-thumbnail" src="{{thumbnailUrl}}">
+				</a>
 			</div>
 			<div class="col-xs-8 col-sm-8 col-md-8 text-left">
 				<div>
@@ -16,10 +42,10 @@
 				</div>
 				<div>{{date_format post_modified_gmt "f"}}</div> 
 				<hr>
-				<a class="btn btn-default" href="">Test</a>
-				<a class="btn btn-info" href="#theme-roller/share/{{post_name}}:/{{post_title}}:">Share</a>
-				<a class="btn btn-warning" href="">Use</a>
-				<a class="btn btn-error" href="">System</a>
+				<a class="" href="#theme-roller/share/{{post_name}}:/{{post_title}}:">Share</a>
+				<!-- <a class="" href="">Use</a>
+				<a class="" href="">Test</a>
+				<a class="" href="">System</a> -->
 			</div>
 		</div>
 </div>

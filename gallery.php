@@ -29,7 +29,7 @@
 			foreach ($query_images as $image){
 				$user = get_user_meta((int) $image->post_author);
 				$image->user = $user["nickname"];
-				$thumb = wp_get_attachment_image_src( $image->ID, 'thumbnail_size' );
+				$thumb = wp_get_attachment_image_src( $image->ID );
 				$image->thumbnailUrl = $thumb['0'];
 				$result[] = $image;
 			}
